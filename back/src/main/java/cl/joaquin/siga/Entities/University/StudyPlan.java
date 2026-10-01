@@ -8,16 +8,24 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "study_plan")
-public class StudyPlan {
+@Table(
+        name = "study_plan",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_study_plan_career_code",
+                columnNames = {"career_id", "code"}
+        )
+)public class StudyPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "career_id", nullable = false)
     private Long careerId;
 
+    @Column(nullable = false)
     private Long code;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private StudyPlanStatus status;
-
 }
