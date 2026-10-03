@@ -2,11 +2,12 @@ package cl.joaquin.siga.Entities.University;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(
         name = "study_plan",
@@ -14,7 +15,8 @@ import lombok.Setter;
                 name = "uk_study_plan_career_code",
                 columnNames = {"career_id", "code"}
         )
-)public class StudyPlan {
+)
+public class StudyPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,7 +25,7 @@ import lombok.Setter;
     private Long careerId;
 
     @Column(nullable = false)
-    private Long code;
+    private String code;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

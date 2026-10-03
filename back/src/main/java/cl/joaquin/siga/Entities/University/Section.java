@@ -5,31 +5,37 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(
-        name = "period_enrollment",
+        name = "section",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_period_enrollment_student_period",
-                columnNames = {"student_id", "academic_period_id"}
+                name = "uk_section_subject_academic_period",
+                columnNames = {"subject_id", "academic_period_id"}
         )
 )
-public class PeriodEnrollment {
-
+public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private Long studentId;
+    private Long subjectId;
 
     @Column(nullable = false)
     private Long academicPeriodId;
 
     @Column(nullable = false)
-    private LocalDate enrollmentDate;
+    private Long teacherId;
+
+    @Column(nullable = false)
+    private Integer capacity;
+
+    @Column(nullable = false)
+    private Integer enrolledCount;
+
+    @Version
+    private Long version;
 }

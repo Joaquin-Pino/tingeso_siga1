@@ -12,14 +12,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tel {
+public class WeeklyHours {
 
-    @Column(nullable = false)
+    @Column(name = "theory_hours", nullable = false)
     private Integer theoryHours;
 
-    @Column(nullable = false)
+    @Column(name = "exercise_hours", nullable = false)
     private Integer exerciseHours;
 
-    @Column(nullable = false)
+    @Column(name = "lab_hours", nullable = false)
     private Integer labHours;
 }

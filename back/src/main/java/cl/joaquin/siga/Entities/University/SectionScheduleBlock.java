@@ -5,31 +5,29 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(
-        name = "period_enrollment",
+        name = "section_schedule_block",
         uniqueConstraints = @UniqueConstraint(
-                name = "uk_period_enrollment_student_period",
-                columnNames = {"student_id", "academic_period_id"}
+                name = "uk_section_schedule_block_section_day_module",
+                columnNames = {"section_id", "day", "module"}
         )
 )
-public class PeriodEnrollment {
-
+public class SectionScheduleBlock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "section_id", nullable = false)
+    private Long sectionId;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Long studentId;
+    private WeekDay day;
 
     @Column(nullable = false)
-    private Long academicPeriodId;
-
-    @Column(nullable = false)
-    private LocalDate enrollmentDate;
+    private Integer module;
 }

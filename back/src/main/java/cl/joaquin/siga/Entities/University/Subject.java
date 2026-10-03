@@ -2,10 +2,12 @@ package cl.joaquin.siga.Entities.University;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "subject" ,
         uniqueConstraints = @UniqueConstraint(
@@ -21,18 +23,18 @@ public class Subject {
     @Column(name = "study_plan_id", nullable = false)
     private Long studyPlanId;
 
-    @Column(name = "code", nullable = false)
-    private Long code;
+    @Column(nullable = false)
+    private String code;
 
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private Semester semester;
+    private Integer semester;
 
     @Embedded
-    private Tel tel;
+    private WeeklyHours weeklyHours;
 
     @Column(nullable = false)
-    private long sct;
+    private Integer credits;
 }

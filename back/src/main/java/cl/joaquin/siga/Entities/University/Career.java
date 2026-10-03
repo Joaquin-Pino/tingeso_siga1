@@ -2,14 +2,15 @@ package cl.joaquin.siga.Entities.University;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "career",
-    uniqueConstraints = @UniqueConstraint(name = "uk_career_code", columnNames = {"code"}
-    )
+    uniqueConstraints = @UniqueConstraint(name = "uk_career_code", columnNames = "code")
 )
 public class Career {
     @Id
@@ -17,7 +18,7 @@ public class Career {
     private Long id;
 
     @Column(nullable = false)
-    private Long code;
+    private String code;
 
     @Column(nullable = false)
     private String name;
@@ -25,13 +26,14 @@ public class Career {
     @Column(nullable = false)
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CareerStatus status;
 
     @Column(nullable = false)
-    private Integer startingYear;
+    private Integer startYear;
 
     @Column(nullable = false)
-    private Integer vacancy;
+    private Integer vacancies;
 
 }

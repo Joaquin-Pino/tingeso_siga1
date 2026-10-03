@@ -2,12 +2,12 @@ package cl.joaquin.siga.Entities.University;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
-@Setter
 @Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "academic_period",
         uniqueConstraints = @UniqueConstraint(
@@ -27,5 +27,11 @@ public class AcademicPeriod {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PeriodStatus periodStatus;
+    private PeriodStatus status;
+
+    // TODO: mover a AcademicPeriodService cuando exista esa capa; no debe quedar lógica en la entidad.
+    @Transient
+    public String getCode() {
+        return year + "-" + semester.getNumber();
+    }
 }
