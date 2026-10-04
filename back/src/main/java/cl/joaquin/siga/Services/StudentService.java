@@ -5,6 +5,7 @@ import cl.joaquin.siga.DTOs.StudentDTO.StudentCareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStatusUpdateDTO;
+import cl.joaquin.siga.DTOs.StudentDTO.StudentStudyPlanUpdateDTO;
 import cl.joaquin.siga.Entities.People.AcademicRecord;
 import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.Entities.People.StudentStatus;
@@ -60,6 +61,7 @@ public class StudentService {
             throw new IllegalArgumentException("El correo ya está registrado: " + dto.email());
         }
 
+        // estudiante queda asociado al plan de estudios vigente
         StudyPlan currentPlan = resolveCurrentStudyPlanOfActiveCareer(dto.careerId());
 
         Student student = new Student();
@@ -116,13 +118,23 @@ public class StudentService {
     }
 
     public StudentResponseDTO updateStatus(Long studentId, StudentStatusUpdateDTO dto) {
-        if (dto.status() == StudentStatus.GRADUATED || dto.status() == StudentStatus.ELIMINATED) {
+        // el administrador solo puede asignar REGULAR, POSTPONED o TEMPORARY_WITHDRAWAL;
+        // GRADUATED/ELIMINATED los asigna únicamente el cierre de período
+        if (dto.status() != StudentStatus.REGULAR
+                && dto.status() != StudentStatus.POSTPONED
+                && dto.status() != StudentStatus.TEMPORARY_WITHDRAWAL) {
             throw new IllegalArgumentException(
-                    "El estado " + dto.status() + " solo lo asigna el cierre de período, no se puede asignar manualmente");
+                    "El estado " + dto.status() + " no se puede asignar manualmente; solo REGULAR, POSTPONED o TEMPORARY_WITHDRAWAL");
         }
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+
+        // un estudiante egresado o eliminado por el cierre no se puede modificar manualmente
+        if (student.getStatus() == StudentStatus.GRADUATED || student.getStatus() == StudentStatus.ELIMINATED) {
+            throw new IllegalStateException(
+                    "No se puede modificar el estado: el estudiante está " + student.getStatus() + ": " + studentId);
+        }
 
         student.setStatus(dto.status());
         return toResponseDTO(studentRepository.save(student));
@@ -149,6 +161,33 @@ public class StudentService {
             student.setCareerId(dto.careerId());
             student.setStudyPlanId(currentPlan.getId());
         }
+
+        return toResponseDTO(studentRepository.save(student));
+    }
+
+    public StudentResponseDTO updateStudyPlan(Long studentId, StudentStudyPlanUpdateDTO dto) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+
+        if (courseRegistrationRepository.existsByStudentId(studentId)) {
+            throw new IllegalStateException(
+                    "No se puede cambiar plan de estudios: el estudiante tiene inscripciones: " + studentId);
+        }
+        if (academicRecordRepository.existsByStudentId(studentId)) {
+            throw new IllegalStateException(
+                    "No se puede cambiar plan de estudios: el estudiante tiene historial académico: " + studentId);
+        }
+
+        StudyPlan newPlan = studyPlanRepository.findById(dto.studyPlanId())
+                .orElseThrow(() -> new IllegalArgumentException("Plan de estudios no encontrado: " + dto.studyPlanId()));
+
+        // el plan debe pertenecer a la carrera del estudiante (careerId/studyPlanId deben ser coherentes)
+        if (!newPlan.getCareerId().equals(student.getCareerId())) {
+            throw new IllegalArgumentException(
+                    "El plan de estudios no pertenece a la carrera del estudiante: " + dto.studyPlanId());
+        }
+
+        student.setStudyPlanId(newPlan.getId());
 
         return toResponseDTO(studentRepository.save(student));
     }
@@ -184,5 +223,4 @@ public class StudentService {
         student.setStatus(StudentStatus.ELIMINATED);
         studentRepository.save(student);
     }
-
 }
