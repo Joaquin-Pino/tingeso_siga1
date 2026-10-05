@@ -1,5 +1,6 @@
 package cl.joaquin.siga.Services;
 
+import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicRecordResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
@@ -40,13 +41,13 @@ public class StudentService {
 
     public StudentResponseDTO getById(Long studentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
         return toResponseDTO(student);
     }
 
     public List<AcademicRecordResponseDTO> getAcademicHistory(Long studentId) {
         if (!studentRepository.existsById(studentId)) {
-            throw new IllegalArgumentException("Estudiante no encontrado: " + studentId);
+            throw new NotFoundException("Estudiante no encontrado: " + studentId);
         }
         return academicRecordRepository.findByStudentId(studentId).stream()
                 .map(StudentService::toAcademicRecordResponseDTO)
@@ -61,7 +62,7 @@ public class StudentService {
             throw new IllegalArgumentException("El correo ya está registrado: " + dto.email());
         }
 
-        // estudiante queda asociado al plan de estudios vigente
+        // estudiante queda asociado al plan de estudios vigente, tambien se revisa que carrera este vigente
         StudyPlan currentPlan = resolveCurrentStudyPlanOfActiveCareer(dto.careerId());
 
         Student student = new Student();
@@ -106,7 +107,7 @@ public class StudentService {
 
     private StudyPlan resolveCurrentStudyPlanOfActiveCareer(Long careerId) {
         if (!careerRepository.existsById(careerId)) {
-            throw new IllegalArgumentException("Carrera no encontrada: " + careerId);
+            throw new NotFoundException("Carrera no encontrada: " + careerId);
         }
         if (!careerRepository.existsByIdAndStatus(careerId, CareerStatus.ACTIVE)) {
             throw new IllegalArgumentException("La carrera no está activa: " + careerId);
@@ -128,7 +129,7 @@ public class StudentService {
         }
 
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
 
         // un estudiante egresado o eliminado por el cierre no se puede modificar manualmente
         if (student.getStatus() == StudentStatus.GRADUATED || student.getStatus() == StudentStatus.ELIMINATED) {
@@ -142,7 +143,7 @@ public class StudentService {
 
     public StudentResponseDTO updateCareer(Long studentId, StudentCareerUpdateDTO dto) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
 
         if (courseRegistrationRepository.existsByStudentId(studentId)) {
             throw new IllegalStateException(
@@ -167,7 +168,7 @@ public class StudentService {
 
     public StudentResponseDTO updateStudyPlan(Long studentId, StudentStudyPlanUpdateDTO dto) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
 
         if (courseRegistrationRepository.existsByStudentId(studentId)) {
             throw new IllegalStateException(
@@ -179,7 +180,7 @@ public class StudentService {
         }
 
         StudyPlan newPlan = studyPlanRepository.findById(dto.studyPlanId())
-                .orElseThrow(() -> new IllegalArgumentException("Plan de estudios no encontrado: " + dto.studyPlanId()));
+                .orElseThrow(() -> new NotFoundException("Plan de estudios no encontrado: " + dto.studyPlanId()));
 
         // el plan debe pertenecer a la carrera del estudiante (careerId/studyPlanId deben ser coherentes)
         if (!newPlan.getCareerId().equals(student.getCareerId())) {
@@ -194,7 +195,7 @@ public class StudentService {
 
     public void deleteStudent(Long studentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
 
         if (courseRegistrationRepository.existsByStudentId(studentId)) {
             throw new IllegalStateException(
@@ -212,14 +213,14 @@ public class StudentService {
     // de edición directa, ya que GRADUATED/ELIMINATED no se asignan manualmente.
     public void graduate(Long studentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
         student.setStatus(StudentStatus.GRADUATED);
         studentRepository.save(student);
     }
 
     public void eliminate(Long studentId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado: " + studentId));
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
         student.setStatus(StudentStatus.ELIMINATED);
         studentRepository.save(student);
     }

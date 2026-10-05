@@ -8,5 +8,7 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository<Student, Long> {
     boolean existsByRun(String run);
     boolean existsByEmail(String email);
+    boolean existsByStudyPlanId(Long studyPlanId);
+    boolean existsByCareerId(Long careerId);
     Optional<Student> findByKeycloakId(String keycloakId);
 }
