@@ -7,6 +7,7 @@ import cl.joaquin.siga.DTOs.StudentDTO.StudentResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStudyPlanUpdateDTO;
 import cl.joaquin.siga.Services.StudentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -38,22 +39,22 @@ public class StudentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public StudentResponseDTO create(@RequestBody StudentCreateDTO dto) {
+    public StudentResponseDTO create(@Valid @RequestBody StudentCreateDTO dto) {
         return studentService.saveStudent(dto);
     }
 
     @PatchMapping("/{id}/status")
-    public StudentResponseDTO updateStatus(@PathVariable Long id, @RequestBody StudentStatusUpdateDTO dto) {
+    public StudentResponseDTO updateStatus(@PathVariable Long id, @Valid @RequestBody StudentStatusUpdateDTO dto) {
         return studentService.updateStatus(id, dto);
     }
 
     @PatchMapping("/{id}/career")
-    public StudentResponseDTO updateCareer(@PathVariable Long id, @RequestBody StudentCareerUpdateDTO dto) {
+    public StudentResponseDTO updateCareer(@PathVariable Long id, @Valid @RequestBody StudentCareerUpdateDTO dto) {
         return studentService.updateCareer(id, dto);
     }
 
     @PatchMapping("/{id}/study-plan")
-    public StudentResponseDTO updateStudyPlan(@PathVariable Long id, @RequestBody StudentStudyPlanUpdateDTO dto) {
+    public StudentResponseDTO updateStudyPlan(@PathVariable Long id, @Valid @RequestBody StudentStudyPlanUpdateDTO dto) {
         return studentService.updateStudyPlan(id, dto);
     }
 

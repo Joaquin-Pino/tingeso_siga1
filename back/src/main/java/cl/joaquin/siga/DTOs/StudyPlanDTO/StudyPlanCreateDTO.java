@@ -1,7 +1,10 @@
 package cl.joaquin.siga.DTOs.StudyPlanDTO;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record StudyPlanCreateDTO(
-        Long careerId,
-        String code
+        @NotNull Long careerId,
+        @NotBlank String code
 ) {
 }

@@ -1,10 +1,14 @@
 package cl.joaquin.siga.DTOs.StudentDTO;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record StudentCreateDTO(
-        String keycloakId,
-        String run,
-        String fullName,
-        String email,
-        Long careerId
+        @NotBlank String keycloakId,
+        @NotBlank String run,
+        @NotBlank String fullName,
+        @NotBlank @Email String email,
+        @NotNull Long careerId
 ) {
 }

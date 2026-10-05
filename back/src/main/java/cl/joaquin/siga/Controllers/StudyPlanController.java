@@ -4,6 +4,7 @@ import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanCreateDTO;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanResponseDTO;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanUpdateDTO;
 import cl.joaquin.siga.Services.StudyPlanService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,12 @@ public class StudyPlanController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public StudyPlanResponseDTO create(@RequestBody StudyPlanCreateDTO dto) {
+    public StudyPlanResponseDTO create(@Valid @RequestBody StudyPlanCreateDTO dto) {
         return studyPlanService.createStudyPlan(dto);
     }
 
     @PutMapping("/{id}")
-    public StudyPlanResponseDTO update(@PathVariable Long id, @RequestBody StudyPlanUpdateDTO dto) {
+    public StudyPlanResponseDTO update(@PathVariable Long id, @Valid @RequestBody StudyPlanUpdateDTO dto) {
         return studyPlanService.updateStudyPlan(id, dto);
     }
 

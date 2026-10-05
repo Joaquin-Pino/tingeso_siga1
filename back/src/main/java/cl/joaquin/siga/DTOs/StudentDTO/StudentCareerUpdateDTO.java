@@ -1,4 +1,6 @@
 package cl.joaquin.siga.DTOs.StudentDTO;
 
-public record StudentCareerUpdateDTO(Long careerId) {
+import jakarta.validation.constraints.NotNull;
+
+public record StudentCareerUpdateDTO(@NotNull Long careerId) {
 }

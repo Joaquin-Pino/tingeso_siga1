@@ -7,6 +7,7 @@ import cl.joaquin.siga.DTOs.CareerDTO.CareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanResponseDTO;
 import cl.joaquin.siga.Services.CareerService;
 import cl.joaquin.siga.Services.StudyPlanService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -38,17 +39,17 @@ public class CareerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CareerResponseDTO create(@RequestBody CareerCreateDTO dto) {
+    public CareerResponseDTO create(@Valid @RequestBody CareerCreateDTO dto) {
         return careerService.createCareer(dto);
     }
 
     @PutMapping("/{id}")
-    public CareerResponseDTO update(@PathVariable Long id, @RequestBody CareerUpdateDTO dto) {
+    public CareerResponseDTO update(@PathVariable Long id, @Valid @RequestBody CareerUpdateDTO dto) {
         return careerService.updateCareer(id, dto);
     }
 
     @PatchMapping("/{id}/status")
-    public CareerResponseDTO updateStatus(@PathVariable Long id, @RequestBody CareerStatusUpdateDTO dto) {
+    public CareerResponseDTO updateStatus(@PathVariable Long id, @Valid @RequestBody CareerStatusUpdateDTO dto) {
         return careerService.updateStatus(id, dto);
     }
 

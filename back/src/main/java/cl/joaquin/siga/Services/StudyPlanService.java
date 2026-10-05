@@ -79,6 +79,11 @@ public class StudyPlanService {
         StudyPlan plan = studyPlanRepository.findById(studyPlanId)
                 .orElseThrow(() -> new NotFoundException("Plan de estudios no encontrado: " + studyPlanId));
 
+        // borrar el plan vigente dejaría a la carrera sin plan y sin poder registrar estudiantes
+        if (plan.getStatus() == StudyPlanStatus.CURRENT) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el plan de estudios vigente de la carrera: " + studyPlanId);
+        }
         if (studentRepository.existsByStudyPlanId(studyPlanId)) {
             throw new IllegalStateException(
                     "No se puede eliminar: el plan de estudios tiene estudiantes asociados: " + studyPlanId);

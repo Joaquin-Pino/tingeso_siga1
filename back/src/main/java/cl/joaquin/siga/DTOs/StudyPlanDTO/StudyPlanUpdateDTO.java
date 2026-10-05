@@ -1,6 +1,8 @@
 package cl.joaquin.siga.DTOs.StudyPlanDTO;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record StudyPlanUpdateDTO(
-        String code
+        @NotBlank String code
 ) {
 }

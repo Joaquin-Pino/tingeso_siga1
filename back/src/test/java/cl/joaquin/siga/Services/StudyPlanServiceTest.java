@@ -53,8 +53,20 @@ class StudyPlanServiceTest {
     }
 
     @Test
+    void deleteStudyPlan_current_throws() {
+        StudyPlan plan = new StudyPlan();
+        plan.setStatus(StudyPlanStatus.CURRENT);
+        when(studyPlanRepository.findById(5L)).thenReturn(Optional.of(plan));
+
+        assertThrows(IllegalStateException.class, () -> service.deleteStudyPlan(5L));
+        verify(studyPlanRepository, never()).delete(any());
+    }
+
+    @Test
     void deleteStudyPlan_withStudents_throws() {
-        when(studyPlanRepository.findById(5L)).thenReturn(Optional.of(new StudyPlan()));
+        StudyPlan plan = new StudyPlan();
+        plan.setStatus(StudyPlanStatus.NOT_CURRENT);
+        when(studyPlanRepository.findById(5L)).thenReturn(Optional.of(plan));
         when(studentRepository.existsByStudyPlanId(5L)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> service.deleteStudyPlan(5L));
