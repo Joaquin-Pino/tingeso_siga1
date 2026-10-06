@@ -3,11 +3,15 @@ package cl.joaquin.siga.Controllers;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanCreateDTO;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanResponseDTO;
 import cl.joaquin.siga.DTOs.StudyPlanDTO.StudyPlanUpdateDTO;
+import cl.joaquin.siga.DTOs.SubjectDTO.SubjectResponseDTO;
 import cl.joaquin.siga.Services.StudyPlanService;
+import cl.joaquin.siga.Services.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/study-plans")
@@ -15,6 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class StudyPlanController {
 
     private final StudyPlanService studyPlanService;
+    private final SubjectService subjectService;
+
+    @GetMapping("/{id}/subjects")
+    public List<SubjectResponseDTO> getSubjects(@PathVariable Long id) {
+        return subjectService.getAllStudyPlanSubjects(id);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

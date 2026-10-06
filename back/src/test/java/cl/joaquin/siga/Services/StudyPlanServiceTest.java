@@ -7,6 +7,7 @@ import cl.joaquin.siga.Entities.University.StudyPlanStatus;
 import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CareerRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
+import cl.joaquin.siga.Repositories.University.SubjectRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,7 @@ class StudyPlanServiceTest {
     @Mock StudyPlanRepository studyPlanRepository;
     @Mock CareerRepository careerRepository;
     @Mock StudentRepository studentRepository;
+    @Mock SubjectRepository subjectRepository;
     @InjectMocks StudyPlanService service;
 
     @Test
@@ -68,6 +70,18 @@ class StudyPlanServiceTest {
         plan.setStatus(StudyPlanStatus.NOT_CURRENT);
         when(studyPlanRepository.findById(5L)).thenReturn(Optional.of(plan));
         when(studentRepository.existsByStudyPlanId(5L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> service.deleteStudyPlan(5L));
+        verify(studyPlanRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteStudyPlan_withSubjects_throws() {
+        StudyPlan plan = new StudyPlan();
+        plan.setStatus(StudyPlanStatus.NOT_CURRENT);
+        when(studyPlanRepository.findById(5L)).thenReturn(Optional.of(plan));
+        when(studentRepository.existsByStudyPlanId(5L)).thenReturn(false);
+        when(subjectRepository.existsByStudyPlanId(5L)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> service.deleteStudyPlan(5L));
         verify(studyPlanRepository, never()).delete(any());

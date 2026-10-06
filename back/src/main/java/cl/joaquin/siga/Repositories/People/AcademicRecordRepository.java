@@ -8,4 +8,5 @@ import java.util.List;
 public interface AcademicRecordRepository extends JpaRepository<AcademicRecord, Long> {
     boolean existsByStudentId(Long studentId);
     List<AcademicRecord> findByStudentId(Long studentId);
+    boolean existsBySubjectId(Long subjectId);
 }

@@ -9,6 +9,7 @@ import cl.joaquin.siga.Entities.University.StudyPlanStatus;
 import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CareerRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
+import cl.joaquin.siga.Repositories.University.SubjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class StudyPlanService {
     private final StudyPlanRepository studyPlanRepository;
     private final CareerRepository careerRepository;
     private final StudentRepository studentRepository;
+    private final SubjectRepository subjectRepository;
 
     public List<StudyPlanResponseDTO> getAllCareerStudyPlan(Long careerId) {
         if (!careerRepository.existsById(careerId)) {
@@ -87,6 +89,11 @@ public class StudyPlanService {
         if (studentRepository.existsByStudyPlanId(studyPlanId)) {
             throw new IllegalStateException(
                     "No se puede eliminar: el plan de estudios tiene estudiantes asociados: " + studyPlanId);
+        }
+        // las asignaturas guardan studyPlanId sin FK, así que quedarían huérfanas
+        if (subjectRepository.existsByStudyPlanId(studyPlanId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar: el plan de estudios tiene asignaturas asociadas: " + studyPlanId);
         }
 
         studyPlanRepository.delete(plan);

@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CourseRegistrationRepository extends JpaRepository<CourseRegistration, Long> {
     boolean existsByStudentId(Long studentId);
+
+    boolean existsBySubjectId(Long subjectId);
 }
