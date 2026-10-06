@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?define POSTGRES_DB en .env}
+      POSTGRES_USER: ${POSTGRES_USER:?define POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en .env}
+      TZ: ${TZ:-America/Santiago}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  back:
+    build: ./back
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?}
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      TZ: ${TZ:-America/Santiago}
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
