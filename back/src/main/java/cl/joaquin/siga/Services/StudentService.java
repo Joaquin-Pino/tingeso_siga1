@@ -7,6 +7,7 @@ import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStudyPlanUpdateDTO;
+import cl.joaquin.siga.DTOs.StudentDTO.StudentUpdateDTO;
 import cl.joaquin.siga.Entities.People.AcademicRecord;
 import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.Entities.People.StudentStatus;
@@ -116,6 +117,21 @@ public class StudentService {
         return studyPlanRepository.findByCareerIdAndStatus(careerId, StudyPlanStatus.CURRENT)
                 .orElseThrow(() -> new IllegalStateException(
                         "La carrera no tiene un plan de estudios vigente: " + careerId));
+    }
+
+    // el RUN no se modifica una vez registrado el estudiante
+    public StudentResponseDTO updateStudent(Long studentId, StudentUpdateDTO dto) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Estudiante no encontrado: " + studentId));
+
+        // el correo debe seguir siendo único en el sistema
+        if (!dto.email().equals(student.getEmail()) && studentRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("El correo ya está registrado: " + dto.email());
+        }
+
+        student.setFullName(dto.fullName());
+        student.setEmail(dto.email());
+        return toResponseDTO(studentRepository.save(student));
     }
 
     public StudentResponseDTO updateStatus(Long studentId, StudentStatusUpdateDTO dto) {

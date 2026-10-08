@@ -4,7 +4,9 @@ import cl.joaquin.siga.DTOs.StudentDTO.StudentCareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStatusUpdateDTO;
+import cl.joaquin.siga.DTOs.StudentDTO.StudentUpdateDTO;
 import cl.joaquin.siga.Entities.People.Student;
+import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Entities.People.StudentStatus;
 import cl.joaquin.siga.Entities.University.CareerStatus;
 import cl.joaquin.siga.Entities.University.StudyPlan;
@@ -99,5 +101,55 @@ class StudentServiceTest {
 
         assertThrows(IllegalStateException.class, () -> service.deleteStudent(1L));
         verify(studentRepository, never()).delete(any());
+    }
+
+    private Student existingStudent() {
+        Student student = new Student();
+        student.setId(1L);
+        student.setRun("1-9");
+        student.setFullName("Ana");
+        student.setEmail("a@x.cl");
+        return student;
+    }
+
+    @Test
+    void updateStudent_updatesNameAndEmail_keepsRun() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(existingStudent()));
+        when(studentRepository.existsByEmail("b@x.cl")).thenReturn(false);
+        when(studentRepository.save(any(Student.class))).thenAnswer(i -> i.getArgument(0));
+
+        StudentResponseDTO result = service.updateStudent(1L, new StudentUpdateDTO("Ana María", "b@x.cl"));
+
+        assertEquals("Ana María", result.fullName());
+        assertEquals("b@x.cl", result.email());
+        assertEquals("1-9", result.run());
+    }
+
+    @Test
+    void updateStudent_sameEmail_skipsUniquenessCheck() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(existingStudent()));
+        when(studentRepository.save(any(Student.class))).thenAnswer(i -> i.getArgument(0));
+
+        service.updateStudent(1L, new StudentUpdateDTO("Ana María", "a@x.cl"));
+
+        verify(studentRepository, never()).existsByEmail(any());
+    }
+
+    @Test
+    void updateStudent_emailTakenByAnother_throws() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(existingStudent()));
+        when(studentRepository.existsByEmail("b@x.cl")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateStudent(1L, new StudentUpdateDTO("Ana", "b@x.cl")));
+        verify(studentRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStudent_notFound_throws() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> service.updateStudent(1L, new StudentUpdateDTO("Ana", "a@x.cl")));
     }
 }

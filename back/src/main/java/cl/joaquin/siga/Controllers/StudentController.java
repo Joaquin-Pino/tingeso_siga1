@@ -6,6 +6,7 @@ import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentStudyPlanUpdateDTO;
+import cl.joaquin.siga.DTOs.StudentDTO.StudentUpdateDTO;
 import cl.joaquin.siga.Services.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,11 @@ public class StudentController {
     @ResponseStatus(HttpStatus.CREATED)
     public StudentResponseDTO create(@Valid @RequestBody StudentCreateDTO dto) {
         return studentService.saveStudent(dto);
+    }
+
+    @PutMapping("/{id}")
+    public StudentResponseDTO update(@PathVariable Long id, @Valid @RequestBody StudentUpdateDTO dto) {
+        return studentService.updateStudent(id, dto);
     }
 
     @PatchMapping("/{id}/status")
