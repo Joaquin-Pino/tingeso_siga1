@@ -1,12 +1,16 @@
 package cl.joaquin.siga.Controllers;
 
+import cl.joaquin.siga.DTOs.SectionDTO.ScheduleBlockDTO;
+import cl.joaquin.siga.DTOs.SectionDTO.SectionResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherCreateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherUpdateDTO;
 import cl.joaquin.siga.Entities.People.AcademicDegree;
 import cl.joaquin.siga.Entities.People.TeacherStatus;
+import cl.joaquin.siga.Entities.University.WeekDay;
 import cl.joaquin.siga.Exceptions.NotFoundException;
+import cl.joaquin.siga.Services.SectionService;
 import cl.joaquin.siga.Services.TeacherService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,7 @@ class TeacherControllerTest {
 
     @Autowired MockMvc mockMvc;
     @MockitoBean TeacherService teacherService;
+    @MockitoBean SectionService sectionService;
 
     private static TeacherResponseDTO response(TeacherStatus status) {
         return new TeacherResponseDTO(1L, "1-9", "Pedro", "p@x.cl", "Ingeniero", AcademicDegree.MASTER, status);
@@ -59,6 +64,16 @@ class TeacherControllerTest {
 
         mockMvc.perform(get("/api/teachers/9"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getSections_returns200() throws Exception {
+        when(sectionService.getAllTeacherSections(1L)).thenReturn(List.of(new SectionResponseDTO(
+                3L, 5L, 10L, 1L, 30, 0, List.of(new ScheduleBlockDTO(WeekDay.V, 6)))));
+
+        mockMvc.perform(get("/api/teachers/1/sections"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].teacherId").value(1));
     }
 
     @Test

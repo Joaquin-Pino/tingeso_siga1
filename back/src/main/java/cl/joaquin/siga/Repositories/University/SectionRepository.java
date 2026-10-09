@@ -8,5 +8,9 @@ import java.util.List;
 public interface SectionRepository extends JpaRepository<Section, Long> {
     boolean existsBySubjectId(Long subjectId);
     boolean existsByTeacherId(Long teacherId);
+    boolean existsByAcademicPeriodId(Long academicPeriodId);
+    boolean existsBySubjectIdAndAcademicPeriodId(Long subjectId, Long academicPeriodId);
     List<Section> findByTeacherId(Long teacherId);
+    List<Section> findByAcademicPeriodId(Long academicPeriodId);
+    List<Section> findByTeacherIdAndAcademicPeriodId(Long teacherId, Long academicPeriodId);
 }

@@ -28,10 +28,4 @@ public class AcademicPeriod {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PeriodStatus status;
-
-    // TODO: mover a AcademicPeriodService cuando exista esa capa; no debe quedar lógica en la entidad.
-    @Transient
-    public String getCode() {
-        return year + "-" + semester.getNumber();
-    }
 }

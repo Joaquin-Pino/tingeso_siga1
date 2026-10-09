@@ -1,9 +1,11 @@
 package cl.joaquin.siga.Controllers;
 
+import cl.joaquin.siga.DTOs.SectionDTO.SectionResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherCreateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherUpdateDTO;
+import cl.joaquin.siga.Services.SectionService;
 import cl.joaquin.siga.Services.TeacherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.List;
 public class TeacherController {
 
     private final TeacherService teacherService;
+    private final SectionService sectionService;
 
     @GetMapping
     public List<TeacherResponseDTO> getAll() {
@@ -27,6 +30,11 @@ public class TeacherController {
     @GetMapping("/{id}")
     public TeacherResponseDTO getById(@PathVariable Long id) {
         return teacherService.getById(id);
+    }
+
+    @GetMapping("/{id}/sections")
+    public List<SectionResponseDTO> getSections(@PathVariable Long id) {
+        return sectionService.getAllTeacherSections(id);
     }
 
     @PostMapping
