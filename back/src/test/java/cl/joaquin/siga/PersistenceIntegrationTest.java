@@ -53,7 +53,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Lo que los tests con mocks no pueden probar: el índice parcial de schema.sql, las unique constraints
+// Lo que los tests con mocks no pueden probar: la unique de current_career_id, las unique constraints
 // (la defensa real entre réplicas) y el orden de flush que los Services necesitan para no violarlas
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -103,6 +103,9 @@ class PersistenceIntegrationTest {
         plan.setCareerId(careerId);
         plan.setCode(code);
         plan.setStatus(status);
+        if (status == StudyPlanStatus.CURRENT) {
+            plan.setCurrentCareerId(careerId);
+        }
         return plan;
     }
 
@@ -114,7 +117,7 @@ class PersistenceIntegrationTest {
     // ---- planes de estudio: un solo vigente por carrera ----
 
     @Test
-    void partialIndex_rejectsTwoCurrentPlansInSameCareer() {
+    void currentCareerUnique_rejectsTwoCurrentPlansInSameCareer() {
         studyPlanRepository.saveAndFlush(rawPlan("2020.1", StudyPlanStatus.CURRENT));
 
         assertThrows(DataIntegrityViolationException.class,
@@ -122,7 +125,7 @@ class PersistenceIntegrationTest {
     }
 
     @Test
-    void partialIndex_allowsManyNotCurrentPlans() {
+    void currentCareerUnique_allowsManyNotCurrentPlans() {
         studyPlanRepository.saveAndFlush(rawPlan("2018.1", StudyPlanStatus.NOT_CURRENT));
         studyPlanRepository.saveAndFlush(rawPlan("2019.1", StudyPlanStatus.NOT_CURRENT));
 

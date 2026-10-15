@@ -50,10 +50,11 @@ public class StudyPlanService {
         }
 
         // se desactiva y flushea el vigente anterior antes de insertar el nuevo, para no violar
-        // el índice único parcial de "un solo plan vigente por carrera"
+        // la unique de current_career_id ("un solo plan vigente por carrera")
         studyPlanRepository.findByCareerIdAndStatus(dto.careerId(), StudyPlanStatus.CURRENT)
                 .ifPresent(previous -> {
                     previous.setStatus(StudyPlanStatus.NOT_CURRENT);
+                    previous.setCurrentCareerId(null);
                     studyPlanRepository.saveAndFlush(previous);
                 });
 
@@ -61,6 +62,7 @@ public class StudyPlanService {
         plan.setCareerId(dto.careerId());
         plan.setCode(dto.code());
         plan.setStatus(StudyPlanStatus.CURRENT);
+        plan.setCurrentCareerId(dto.careerId());
 
         return toResponseDTO(studyPlanRepository.save(plan));
     }

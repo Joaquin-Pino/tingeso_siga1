@@ -151,7 +151,7 @@ class StudyPlanServiceTest {
 
         service.createStudyPlan(new StudyPlanCreateDTO(1L, "2026.1"));
 
-        // el índice único parcial exige que el anterior deje de ser vigente antes de insertar el nuevo
+        // la unique de current_career_id exige que el anterior deje de ser vigente antes de insertar el nuevo
         InOrder order = inOrder(studyPlanRepository);
         order.verify(studyPlanRepository).saveAndFlush(previous);
         order.verify(studyPlanRepository).save(any(StudyPlan.class));
