@@ -22,6 +22,7 @@ import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,9 +36,11 @@ public class StudentService {
     private final AcademicRecordRepository academicRecordRepository;
 
     public List<StudentResponseDTO> getAll() {
-        return studentRepository.findAll().stream()
-                .map(StudentService::toResponseDTO)
-                .toList();
+        List<StudentResponseDTO> result = new ArrayList<>();
+        for (Student student : studentRepository.findAll()) {
+            result.add(toResponseDTO(student));
+        }
+        return result;
     }
 
     public StudentResponseDTO getById(Long studentId) {
@@ -50,9 +53,11 @@ public class StudentService {
         if (!studentRepository.existsById(studentId)) {
             throw new NotFoundException("Estudiante no encontrado: " + studentId);
         }
-        return academicRecordRepository.findByStudentId(studentId).stream()
-                .map(StudentService::toAcademicRecordResponseDTO)
-                .toList();
+        List<AcademicRecordResponseDTO> result = new ArrayList<>();
+        for (AcademicRecord record : academicRecordRepository.findByStudentId(studentId)) {
+            result.add(toAcademicRecordResponseDTO(record));
+        }
+        return result;
     }
 
     public StudentResponseDTO saveStudent(StudentCreateDTO dto) {

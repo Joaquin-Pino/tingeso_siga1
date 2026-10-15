@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,9 +30,11 @@ public class StudyPlanService {
         if (!careerRepository.existsById(careerId)) {
             throw new NotFoundException("Carrera no encontrada: " + careerId);
         }
-        return studyPlanRepository.findByCareerId(careerId).stream()
-                .map(StudyPlanService::toResponseDTO)
-                .toList();
+        List<StudyPlanResponseDTO> result = new ArrayList<>();
+        for (StudyPlan plan : studyPlanRepository.findByCareerId(careerId)) {
+            result.add(toResponseDTO(plan));
+        }
+        return result;
     }
 
     // El plan nuevo queda vigente y el vigente anterior de la carrera pasa a NOT_CURRENT. Va en una

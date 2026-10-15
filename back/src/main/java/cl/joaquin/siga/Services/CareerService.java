@@ -13,6 +13,7 @@ import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,9 +25,11 @@ public class CareerService {
     private final StudentRepository studentRepository;
 
     public List<CareerResponseDTO> getAll() {
-        return careerRepository.findAll().stream()
-                .map(CareerService::toResponseDTO)
-                .toList();
+        List<CareerResponseDTO> result = new ArrayList<>();
+        for (Career career : careerRepository.findAll()) {
+            result.add(toResponseDTO(career));
+        }
+        return result;
     }
 
     public CareerResponseDTO getById(Long careerId) {

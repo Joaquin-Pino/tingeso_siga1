@@ -16,6 +16,7 @@ import cl.joaquin.siga.DTOs.TeacherDTO.TeacherCreateDTO;
 import cl.joaquin.siga.Entities.People.AcademicDegree;
 import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.Entities.People.StudentStatus;
+import cl.joaquin.siga.Entities.University.CourseRegistration;
 import cl.joaquin.siga.Entities.University.Section;
 import cl.joaquin.siga.Entities.University.Semester;
 import cl.joaquin.siga.Entities.University.StudyPlan;
@@ -25,6 +26,8 @@ import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CareerRepository;
+import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
+import cl.joaquin.siga.Repositories.University.PeriodEnrollmentRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import cl.joaquin.siga.Repositories.University.SectionScheduleBlockRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
@@ -43,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -72,11 +76,15 @@ class PersistenceIntegrationTest {
     @Autowired AcademicPeriodRepository academicPeriodRepository;
     @Autowired SectionRepository sectionRepository;
     @Autowired SectionScheduleBlockRepository sectionScheduleBlockRepository;
+    @Autowired CourseRegistrationRepository courseRegistrationRepository;
+    @Autowired PeriodEnrollmentRepository periodEnrollmentRepository;
 
     private Long careerId;
 
     @BeforeEach
     void cleanDatabaseAndCreateCareer() {
+        courseRegistrationRepository.deleteAll();
+        periodEnrollmentRepository.deleteAll();
         sectionScheduleBlockRepository.deleteAll();
         sectionRepository.deleteAll();
         academicPeriodRepository.deleteAll();
@@ -291,6 +299,57 @@ class PersistenceIntegrationTest {
         assertTrue(sectionScheduleBlockRepository.findBySectionId(sectionId).isEmpty());
         // sin secciones el período ya se puede eliminar
         assertDoesNotThrow(() -> academicPeriodService.deletePeriod(f.periodId()));
+    }
+
+    // ---- cupos: el UPDATE atómico es lo que protege el tope entre réplicas ----
+
+    @Test
+    @Transactional // los UPDATE de cupo exigen transacción: en la app los abre el Service
+    void reserveSeat_stopsAtCapacityAndBumpsVersion() {
+        OfferingFixture f = offeringFixture();
+        Section raw = rawSection(f);
+        raw.setCapacity(2);
+        Section saved = sectionRepository.saveAndFlush(raw);
+        Long versionBefore = saved.getVersion();
+
+        assertEquals(1, sectionRepository.reserveSeat(saved.getId()));
+        assertEquals(1, sectionRepository.reserveSeat(saved.getId()));
+        assertEquals(0, sectionRepository.reserveSeat(saved.getId())); // sin cupo: no toca la fila
+
+        Section after = sectionRepository.findById(saved.getId()).orElseThrow();
+        assertEquals(2, after.getEnrolledCount());
+        assertEquals(versionBefore + 2, after.getVersion());
+    }
+
+    @Test
+    @Transactional // los UPDATE de cupo exigen transacción: en la app los abre el Service
+    void releaseSeat_neverGoesBelowZero() {
+        OfferingFixture f = offeringFixture();
+        Section saved = sectionRepository.saveAndFlush(rawSection(f));
+        sectionRepository.reserveSeat(saved.getId());
+
+        assertEquals(1, sectionRepository.releaseSeat(saved.getId()));
+        assertEquals(0, sectionRepository.releaseSeat(saved.getId()));
+        assertEquals(0, sectionRepository.findById(saved.getId()).orElseThrow().getEnrolledCount());
+    }
+
+    @Test
+    void uniqueConstraint_rejectsSameSubjectTwiceForStudentInPeriod() {
+        OfferingFixture f = offeringFixture();
+        courseRegistrationRepository.saveAndFlush(rawRegistration(1L, f, 10L));
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> courseRegistrationRepository.saveAndFlush(rawRegistration(1L, f, 11L)));
+    }
+
+    private static CourseRegistration rawRegistration(Long studentId, OfferingFixture f, Long sectionId) {
+        CourseRegistration registration = new CourseRegistration();
+        registration.setStudentId(studentId);
+        registration.setSectionId(sectionId);
+        registration.setSubjectId(f.subjectId());
+        registration.setAcademicPeriodId(f.periodId());
+        registration.setRegistrationDate(java.time.LocalDate.of(2027, 3, 1));
+        return registration;
     }
 
     private static Section rawSection(OfferingFixture f) {
