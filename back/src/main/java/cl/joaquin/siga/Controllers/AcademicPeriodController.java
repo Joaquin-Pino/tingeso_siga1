@@ -2,8 +2,10 @@ package cl.joaquin.siga.Controllers;
 
 import cl.joaquin.siga.DTOs.AcademicPeriodDTO.AcademicPeriodCreateDTO;
 import cl.joaquin.siga.DTOs.AcademicPeriodDTO.AcademicPeriodResponseDTO;
+import cl.joaquin.siga.DTOs.AcademicPeriodDTO.PeriodCloseResponseDTO;
 import cl.joaquin.siga.DTOs.SectionDTO.SectionResponseDTO;
 import cl.joaquin.siga.Services.AcademicPeriodService;
+import cl.joaquin.siga.Services.PeriodCloseService;
 import cl.joaquin.siga.Services.SectionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class AcademicPeriodController {
 
     private final AcademicPeriodService academicPeriodService;
     private final SectionService sectionService;
+    private final PeriodCloseService periodCloseService;
 
     @GetMapping
     public List<AcademicPeriodResponseDTO> getAll() {
@@ -40,6 +43,11 @@ public class AcademicPeriodController {
     @ResponseStatus(HttpStatus.CREATED)
     public AcademicPeriodResponseDTO create(@Valid @RequestBody AcademicPeriodCreateDTO dto) {
         return academicPeriodService.createPeriod(dto);
+    }
+
+    @PostMapping("/{id}/close")
+    public PeriodCloseResponseDTO close(@PathVariable Long id) {
+        return periodCloseService.closePeriod(id);
     }
 
     @DeleteMapping("/{id}")

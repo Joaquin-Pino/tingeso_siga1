@@ -1,0 +1,75 @@
+package cl.joaquin.siga.Services;
+
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.CourseRegistrationResponseDTO;
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.GradeUpdateDTO;
+import cl.joaquin.siga.Entities.University.AcademicPeriod;
+import cl.joaquin.siga.Entities.University.CourseRegistration;
+import cl.joaquin.siga.Entities.University.PeriodStatus;
+import cl.joaquin.siga.Entities.University.Section;
+import cl.joaquin.siga.Exceptions.NotFoundException;
+import cl.joaquin.siga.Repositories.People.TeacherRepository;
+import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
+import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
+import cl.joaquin.siga.Repositories.University.SectionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+// registro de notas por el docente responsable de la sección
+@Service
+@RequiredArgsConstructor
+public class GradeService {
+
+    private final CourseRegistrationRepository courseRegistrationRepository;
+    private final SectionRepository sectionRepository;
+    private final TeacherRepository teacherRepository;
+    private final AcademicPeriodRepository academicPeriodRepository;
+
+    // los inscritos de una sección del docente
+    public List<CourseRegistrationResponseDTO> getSectionRegistrations(Long teacherId, Long sectionId) {
+        findOwnSection(teacherId, sectionId);
+        List<CourseRegistrationResponseDTO> result = new ArrayList<>();
+        for (CourseRegistration registration : courseRegistrationRepository.findBySectionId(sectionId)) {
+            result.add(CourseRegistrationService.toResponseDTO(registration));
+        }
+        return result;
+    }
+
+    // registra o corrige la nota mientras el período esté abierto. El result no se toca: lo calcula el cierre
+    @Transactional
+    public CourseRegistrationResponseDTO registerGrade(Long teacherId, Long sectionId, Long registrationId,
+                                                       GradeUpdateDTO dto) {
+        Section section = findOwnSection(teacherId, sectionId);
+
+        AcademicPeriod period = academicPeriodRepository.findById(section.getAcademicPeriodId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Período académico no encontrado: " + section.getAcademicPeriodId()));
+        if (period.getStatus() != PeriodStatus.OPEN) {
+            throw new IllegalStateException("El período académico está cerrado: " + period.getId());
+        }
+
+        CourseRegistration registration = courseRegistrationRepository.findById(registrationId)
+                .filter(r -> r.getSectionId().equals(sectionId))
+                .orElseThrow(() -> new NotFoundException(
+                        "Inscripción " + registrationId + " no encontrada en la sección: " + sectionId));
+
+        registration.setGrade(dto.grade());
+        return CourseRegistrationService.toResponseDTO(courseRegistrationRepository.save(registration));
+    }
+
+    private Section findOwnSection(Long teacherId, Long sectionId) {
+        if (!teacherRepository.existsById(teacherId)) {
+            throw new NotFoundException("Docente no encontrado: " + teacherId);
+        }
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new NotFoundException("Sección no encontrada: " + sectionId));
+        if (!section.getTeacherId().equals(teacherId)) {
+            throw new IllegalStateException(
+                    "El docente " + teacherId + " no es el responsable de la sección: " + sectionId);
+        }
+        return section;
+    }
+}

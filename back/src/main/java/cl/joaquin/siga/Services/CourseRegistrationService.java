@@ -131,6 +131,10 @@ public class CourseRegistrationService {
                 .orElseThrow(() -> new NotFoundException(
                         "Inscripción " + registrationId + " no encontrada para el estudiante: " + studentId));
         validatePeriodOpen(registration.getAcademicPeriodId());
+        // una inscripción con nota no se anula: la nota se perdería junto con la fila
+        if (registration.getGrade() != null) {
+            throw new IllegalStateException("No se puede anular: la inscripción ya tiene nota: " + registrationId);
+        }
 
         int current = courseRegistrationRepository
                 .findByStudentIdAndAcademicPeriodId(studentId, registration.getAcademicPeriodId()).size();
@@ -311,7 +315,7 @@ public class CourseRegistrationService {
         return result;
     }
 
-    private static CourseRegistrationResponseDTO toResponseDTO(CourseRegistration registration) {
+    static CourseRegistrationResponseDTO toResponseDTO(CourseRegistration registration) {
         return new CourseRegistrationResponseDTO(
                 registration.getId(),
                 registration.getStudentId(),

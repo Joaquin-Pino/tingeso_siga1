@@ -9,6 +9,8 @@ import java.util.List;
 public interface AcademicRecordRepository extends JpaRepository<AcademicRecord, Long> {
     boolean existsByStudentId(Long studentId);
     List<AcademicRecord> findByStudentId(Long studentId);
+    List<AcademicRecord> findByStudentIdAndAcademicPeriodId(Long studentId, Long academicPeriodId);
     List<AcademicRecord> findByStudentIdAndResult(Long studentId, CourseResult result);
     boolean existsBySubjectId(Long subjectId);
+    List<AcademicRecord> findByAcademicPeriodId(Long academicPeriodId);
 }

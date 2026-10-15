@@ -1,5 +1,6 @@
 package cl.joaquin.siga.Controllers;
 
+import cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicAverageResponseDTO;
 import cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicRecordResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
@@ -36,6 +37,12 @@ public class StudentController {
     @GetMapping("/{id}/academic-history")
     public List<AcademicRecordResponseDTO> getAcademicHistory(@PathVariable Long id) {
         return studentService.getAcademicHistory(id);
+    }
+
+    @GetMapping("/{id}/academic-average")
+    public AcademicAverageResponseDTO getAcademicAverage(@PathVariable Long id,
+                                                         @RequestParam(required = false) Long periodId) {
+        return studentService.getAcademicAverage(id, periodId);
     }
 
     @PostMapping

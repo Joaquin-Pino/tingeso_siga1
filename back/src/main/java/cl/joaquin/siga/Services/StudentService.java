@@ -1,6 +1,7 @@
 package cl.joaquin.siga.Services;
 
 import cl.joaquin.siga.Exceptions.NotFoundException;
+import cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicAverageResponseDTO;
 import cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicRecordResponseDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCareerUpdateDTO;
 import cl.joaquin.siga.DTOs.StudentDTO.StudentCreateDTO;
@@ -22,6 +23,8 @@ import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +61,28 @@ public class StudentService {
             result.add(toAcademicRecordResponseDTO(record));
         }
         return result;
+    }
+
+    // promedio ponderado por SCT (aprobadas y reprobadas), calculado al consultar.
+    // periodId opcional: con él es el promedio del semestre; sin él, el de todo el historial
+    public AcademicAverageResponseDTO getAcademicAverage(Long studentId, Long periodId) {
+        if (!studentRepository.existsById(studentId)) {
+            throw new NotFoundException("Estudiante no encontrado: " + studentId);
+        }
+        List<AcademicRecord> records = periodId == null
+                ? academicRecordRepository.findByStudentId(studentId)
+                : academicRecordRepository.findByStudentIdAndAcademicPeriodId(studentId, periodId);
+
+        BigDecimal weightedSum = BigDecimal.ZERO;
+        int totalCredits = 0;
+        for (AcademicRecord record : records) {
+            weightedSum = weightedSum.add(record.getFinalGrade().multiply(BigDecimal.valueOf(record.getCredits())));
+            totalCredits += record.getCredits();
+        }
+        BigDecimal average = totalCredits == 0
+                ? null
+                : weightedSum.divide(BigDecimal.valueOf(totalCredits), 1, RoundingMode.HALF_UP);
+        return new AcademicAverageResponseDTO(studentId, average, records.size(), totalCredits);
     }
 
     public StudentResponseDTO saveStudent(StudentCreateDTO dto) {
