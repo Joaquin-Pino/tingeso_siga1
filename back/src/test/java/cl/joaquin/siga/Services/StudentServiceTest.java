@@ -489,4 +489,55 @@ class StudentServiceTest {
         assertThrows(NotFoundException.class, () -> service.graduate(1L));
         assertThrows(NotFoundException.class, () -> service.eliminate(1L));
     }
+
+    private static AcademicRecord recordWith(String grade, int credits) {
+        AcademicRecord record = new AcademicRecord();
+        record.setFinalGrade(new BigDecimal(grade));
+        record.setCredits(credits);
+        return record;
+    }
+
+    @Test
+    void getAcademicAverage_isWeightedByCredits() {
+        when(studentRepository.existsById(1L)).thenReturn(true);
+        // (7.0*6 + 4.0*2) / 8 = 6.25 -> 6.3
+        when(academicRecordRepository.findByStudentId(1L))
+                .thenReturn(List.of(recordWith("7.0", 6), recordWith("4.0", 2)));
+
+        var result = service.getAcademicAverage(1L, null);
+
+        assertEquals(new BigDecimal("6.3"), result.average());
+        assertEquals(2, result.subjectsCount());
+        assertEquals(8, result.totalCredits());
+    }
+
+    @Test
+    void getAcademicAverage_withPeriod_usesOnlyThatPeriod() {
+        when(studentRepository.existsById(1L)).thenReturn(true);
+        when(academicRecordRepository.findByStudentIdAndAcademicPeriodId(1L, 3L))
+                .thenReturn(List.of(recordWith("5.0", 5)));
+
+        var result = service.getAcademicAverage(1L, 3L);
+
+        assertEquals(new BigDecimal("5.0"), result.average());
+        verify(academicRecordRepository, never()).findByStudentId(any());
+    }
+
+    @Test
+    void getAcademicAverage_noRecords_averageIsNull() {
+        when(studentRepository.existsById(1L)).thenReturn(true);
+        when(academicRecordRepository.findByStudentId(1L)).thenReturn(List.of());
+
+        var result = service.getAcademicAverage(1L, null);
+
+        assertNull(result.average());
+        assertEquals(0, result.totalCredits());
+    }
+
+    @Test
+    void getAcademicAverage_studentNotFound_throws() {
+        when(studentRepository.existsById(9L)).thenReturn(false);
+
+        assertThrows(NotFoundException.class, () -> service.getAcademicAverage(9L, null));
+    }
 }

@@ -1,5 +1,7 @@
 package cl.joaquin.siga.Controllers;
 
+import cl.joaquin.siga.Services.PeriodCloseService;
+import cl.joaquin.siga.DTOs.AcademicPeriodDTO.PeriodCloseResponseDTO;
 import cl.joaquin.siga.DTOs.AcademicPeriodDTO.AcademicPeriodCreateDTO;
 import cl.joaquin.siga.DTOs.AcademicPeriodDTO.AcademicPeriodResponseDTO;
 import cl.joaquin.siga.DTOs.SectionDTO.ScheduleBlockDTO;
@@ -33,6 +35,7 @@ class AcademicPeriodControllerTest {
     @Autowired MockMvc mockMvc;
     @MockitoBean AcademicPeriodService academicPeriodService;
     @MockitoBean SectionService sectionService;
+    @MockitoBean PeriodCloseService periodCloseService;
 
     private static AcademicPeriodResponseDTO response() {
         return new AcademicPeriodResponseDTO(1L, 2027, Semester.FIRST, "2027-1", PeriodStatus.OPEN);
@@ -114,5 +117,35 @@ class AcademicPeriodControllerTest {
 
         mockMvc.perform(delete("/api/academic-periods/1"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void close_returns200WithSummary() throws Exception {
+        when(periodCloseService.closePeriod(1L)).thenReturn(new PeriodCloseResponseDTO(
+                new AcademicPeriodResponseDTO(1L, 2027, Semester.FIRST, "2027-1", PeriodStatus.CLOSED),
+                4, List.of(2L), List.of(3L)));
+
+        mockMvc.perform(post("/api/academic-periods/1/close"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.period.status").value("CLOSED"))
+                .andExpect(jsonPath("$.recordsCreated").value(4))
+                .andExpect(jsonPath("$.graduatedStudentIds[0]").value(2))
+                .andExpect(jsonPath("$.eliminatedStudentIds[0]").value(3));
+    }
+
+    @Test
+    void close_incompleteGrades_returns409() throws Exception {
+        when(periodCloseService.closePeriod(1L)).thenThrow(new IllegalStateException("notas pendientes"));
+
+        mockMvc.perform(post("/api/academic-periods/1/close"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void close_notFound_returns404() throws Exception {
+        when(periodCloseService.closePeriod(9L)).thenThrow(new NotFoundException("no existe"));
+
+        mockMvc.perform(post("/api/academic-periods/9/close"))
+                .andExpect(status().isNotFound());
     }
 }

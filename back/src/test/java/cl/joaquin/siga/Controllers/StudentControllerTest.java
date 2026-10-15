@@ -197,4 +197,34 @@ class StudentControllerTest {
                 .andExpect(status().isNoContent());
         verify(studentService).deleteStudent(1L);
     }
+
+    @Test
+    void getAcademicAverage_withoutPeriod_returns200() throws Exception {
+        when(studentService.getAcademicAverage(1L, null)).thenReturn(
+                new cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicAverageResponseDTO(1L, new BigDecimal("5.4"), 3, 15));
+
+        mockMvc.perform(get("/api/students/1/academic-average"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.average").value(5.4))
+                .andExpect(jsonPath("$.totalCredits").value(15));
+    }
+
+    @Test
+    void getAcademicAverage_withPeriod_passesPeriodId() throws Exception {
+        when(studentService.getAcademicAverage(1L, 3L)).thenReturn(
+                new cl.joaquin.siga.DTOs.AcademicRecordDTO.AcademicAverageResponseDTO(1L, new BigDecimal("6.0"), 1, 5));
+
+        mockMvc.perform(get("/api/students/1/academic-average").param("periodId", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.average").value(6.0));
+    }
+
+    @Test
+    void getAcademicAverage_studentNotFound_returns404() throws Exception {
+        when(studentService.getAcademicAverage(9L, null))
+                .thenThrow(new cl.joaquin.siga.Exceptions.NotFoundException("no existe"));
+
+        mockMvc.perform(get("/api/students/9/academic-average"))
+                .andExpect(status().isNotFound());
+    }
 }

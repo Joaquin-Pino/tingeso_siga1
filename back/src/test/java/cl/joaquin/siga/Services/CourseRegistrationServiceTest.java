@@ -468,4 +468,15 @@ class CourseRegistrationServiceTest {
         assertEquals(2, service.getByStudent(STUDENT_ID, PERIOD_ID).size());
         verify(courseRegistrationRepository, never()).findByStudentId(any());
     }
+
+    @Test
+    void cancel_registrationWithGrade_isRejected() {
+        CourseRegistration registration = registration(1L, STUDENT_ID);
+        registration.setGrade(new java.math.BigDecimal("5.0"));
+        when(courseRegistrationRepository.findById(1L)).thenReturn(Optional.of(registration));
+
+        assertThrows(IllegalStateException.class, () -> service.cancel(STUDENT_ID, 1L));
+        verify(courseRegistrationRepository, never()).delete(any());
+        verify(sectionRepository, never()).releaseSeat(any());
+    }
 }
