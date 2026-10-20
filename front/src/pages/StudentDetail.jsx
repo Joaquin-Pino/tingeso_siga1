@@ -67,9 +67,14 @@ const StudentDetail = () => {
         <h2>
           {student.fullName} <StatusBadge status={student.status} />
         </h2>
-        <Link className="btn btn-outline-secondary" to="/students">
-          Volver
-        </Link>
+        <div>
+          <Link className="btn btn-outline-primary me-2" to={`/students/${id}/registrations`}>
+            Inscripciones
+          </Link>
+          <Link className="btn btn-outline-secondary" to="/students">
+            Volver
+          </Link>
+        </div>
       </div>
       <p className="text-muted">
         RUN {student.run} · {student.email}

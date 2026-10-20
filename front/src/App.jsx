@@ -12,6 +12,11 @@ import CareerForm from "./pages/CareerForm";
 import CareerDetail from "./pages/CareerDetail";
 import StudyPlanDetail from "./pages/StudyPlanDetail";
 import SubjectForm from "./pages/SubjectForm";
+import PeriodList from "./pages/PeriodList";
+import PeriodDetail from "./pages/PeriodDetail";
+import PeriodEnrollments from "./pages/PeriodEnrollments";
+import SectionForm from "./pages/SectionForm";
+import StudentRegistrations from "./pages/StudentRegistrations";
 import NotFound from "./pages/NotFound";
 
 const admin = (element) => <PrivateRoute element={element} rolesAllowed={["ADMIN"]} />;
@@ -29,6 +34,7 @@ function App() {
           <Route path="/students/new" element={admin(<StudentForm />)} />
           <Route path="/students/:id" element={admin(<StudentDetail />)} />
           <Route path="/students/:id/edit" element={admin(<StudentForm />)} />
+          <Route path="/students/:id/registrations" element={admin(<StudentRegistrations />)} />
 
           <Route path="/teachers" element={admin(<TeacherList />)} />
           <Route path="/teachers/new" element={admin(<TeacherForm />)} />
@@ -41,6 +47,12 @@ function App() {
           <Route path="/careers/:careerId/plans/:planId" element={admin(<StudyPlanDetail />)} />
           <Route path="/careers/:careerId/plans/:planId/subjects/new" element={admin(<SubjectForm />)} />
           <Route path="/careers/:careerId/plans/:planId/subjects/:subjectId/edit" element={admin(<SubjectForm />)} />
+
+          <Route path="/periods" element={admin(<PeriodList />)} />
+          <Route path="/periods/:id" element={admin(<PeriodDetail />)} />
+          <Route path="/periods/:id/enrollments" element={admin(<PeriodEnrollments />)} />
+          <Route path="/periods/:periodId/sections/new" element={admin(<SectionForm />)} />
+          <Route path="/periods/:periodId/sections/:sectionId/edit" element={admin(<SectionForm />)} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

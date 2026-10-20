@@ -1,9 +1,13 @@
 import { MODULES, WEEK_DAYS } from "../utils/schedule";
 
-// blocks: [{ day: "L", module: 1 }]; cada bloque se pinta con su etiqueta opcional (ej. nombre de la asignatura)
-const ScheduleGrid = ({ blocks = [] }) => {
-  const findBlock = (day, module) =>
-    blocks.find((b) => b.day === day && b.module === module);
+// blocks: [{ day: "L", module: 1, label? }]. Con onCellClick(day, module) las celdas son seleccionables (editor de bloques).
+const ScheduleGrid = ({ blocks = [], onCellClick }) => {
+  const findBlock = (day, module) => {
+    for (const b of blocks) {
+      if (b.day === day && b.module === module) return b;
+    }
+    return null;
+  };
 
   return (
     <div className="table-responsive">
@@ -25,7 +29,12 @@ const ScheduleGrid = ({ blocks = [] }) => {
               {WEEK_DAYS.map((d) => {
                 const block = findBlock(d.code, m.number);
                 return (
-                  <td key={d.code} className={block ? "table-primary" : ""}>
+                  <td
+                    key={d.code}
+                    className={block ? "table-primary" : ""}
+                    style={onCellClick ? { cursor: "pointer" } : undefined}
+                    onClick={onCellClick ? () => onCellClick(d.code, m.number) : undefined}
+                  >
                     {block ? block.label || "●" : ""}
                   </td>
                 );

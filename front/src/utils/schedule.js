@@ -14,3 +14,9 @@ export const MODULES = [
   { number: 5, time: "15:20 - 16:40" },
   { number: 6, time: "16:55 - 18:15" },
 ];
+
+export const formatBlocks = (blocks) => {
+  const parts = [];
+  for (const b of blocks) parts.push(`${b.day}${b.module}`);
+  return parts.join(" ");
+};
