@@ -12,6 +12,8 @@ import cl.joaquin.siga.Services.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,17 +31,26 @@ public class StudentController {
         return studentService.getAll();
     }
 
+    // el estudiante autenticado (el sub del JWT es su keycloakId)
+    @GetMapping("/me")
+    public StudentResponseDTO getMe(Authentication authentication) {
+        return studentService.getByKeycloakId(authentication.getName());
+    }
+
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @currentUser.isStudent(#id)")
     public StudentResponseDTO getById(@PathVariable Long id) {
         return studentService.getById(id);
     }
 
     @GetMapping("/{id}/academic-history")
+    @PreAuthorize("hasRole('ADMIN') or @currentUser.isStudent(#id)")
     public List<AcademicRecordResponseDTO> getAcademicHistory(@PathVariable Long id) {
         return studentService.getAcademicHistory(id);
     }
 
     @GetMapping("/{id}/academic-average")
+    @PreAuthorize("hasRole('ADMIN') or @currentUser.isStudent(#id)")
     public AcademicAverageResponseDTO getAcademicAverage(@PathVariable Long id,
                                                          @RequestParam(required = false) Long periodId) {
         return studentService.getAcademicAverage(id, periodId);

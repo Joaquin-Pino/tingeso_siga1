@@ -10,6 +10,8 @@ import cl.joaquin.siga.Services.TeacherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,12 +29,19 @@ public class TeacherController {
         return teacherService.getAll();
     }
 
+    // el docente autenticado (el sub del JWT es su keycloakId)
+    @GetMapping("/me")
+    public TeacherResponseDTO getMe(Authentication authentication) {
+        return teacherService.getByKeycloakId(authentication.getName());
+    }
+
     @GetMapping("/{id}")
     public TeacherResponseDTO getById(@PathVariable Long id) {
         return teacherService.getById(id);
     }
 
     @GetMapping("/{id}/sections")
+    @PreAuthorize("hasRole('ADMIN') or @currentUser.isTeacher(#id)")
     public List<SectionResponseDTO> getSections(@PathVariable Long id) {
         return sectionService.getAllTeacherSections(id);
     }

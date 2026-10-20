@@ -4,6 +4,10 @@ const getAll = () => {
   return httpClient.get("/api/teachers");
 };
 
+const getMe = () => {
+  return httpClient.get("/api/teachers/me");
+};
+
 const get = (id) => {
   return httpClient.get(`/api/teachers/${id}`);
 };
@@ -28,4 +32,4 @@ const remove = (id) => {
   return httpClient.delete(`/api/teachers/${id}`);
 };
 
-export default { getAll, get, getSections, create, update, updateStatus, remove };
+export default { getAll, getMe, get, getSections, create, update, updateStatus, remove };

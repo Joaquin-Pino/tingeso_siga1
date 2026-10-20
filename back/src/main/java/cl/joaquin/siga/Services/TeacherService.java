@@ -38,6 +38,13 @@ public class TeacherService {
         return toResponseDTO(findOrThrow(teacherId));
     }
 
+    // el docente autenticado: el sub del JWT de Keycloak es su keycloakId
+    public TeacherResponseDTO getByKeycloakId(String keycloakId) {
+        Teacher teacher = teacherRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new NotFoundException("No hay un docente asociado a la cuenta autenticada"));
+        return toResponseDTO(teacher);
+    }
+
     public TeacherResponseDTO saveTeacher(TeacherCreateDTO dto) {
         if (teacherRepository.existsByRun(dto.run())) {
             throw new IllegalArgumentException("El RUN ya está registrado: " + dto.run());

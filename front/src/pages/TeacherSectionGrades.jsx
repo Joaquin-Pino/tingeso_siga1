@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import gradeService from "../services/grade.service";
 import sectionService from "../services/section.service";
 import academicPeriodService from "../services/academicPeriod.service";
-import studentService from "../services/student.service";
 import useCurrentTeacher from "../hooks/useCurrentTeacher";
 import ScheduleGrid from "../components/ScheduleGrid";
 import StatusBadge from "../components/StatusBadge";
@@ -18,7 +17,6 @@ const TeacherSectionGrades = () => {
   const [period, setPeriod] = useState(null);
   const [subject, setSubject] = useState(null);
   const [registrations, setRegistrations] = useState([]);
-  const [students, setStudents] = useState({});
   const [grades, setGrades] = useState({});
   const [saved, setSaved] = useState("");
   const [error, setError] = useState("");
@@ -53,15 +51,6 @@ const TeacherSectionGrades = () => {
           .catch(fail);
       })
       .catch(fail);
-    // los nombres son un extra: si el rol no puede listar estudiantes se muestra solo el id
-    studentService
-      .getAll()
-      .then((response) => {
-        const byId = {};
-        for (const s of response.data) byId[s.id] = s;
-        setStudents(byId);
-      })
-      .catch(() => {});
   }, [teacher, sectionId]);
 
   const saveGrade = (registration) => {
@@ -99,7 +88,6 @@ const TeacherSectionGrades = () => {
       <table className="table table-striped align-middle">
         <thead>
           <tr>
-            <th>RUN</th>
             <th>Estudiante</th>
             <th style={{ width: "160px" }}>Nota final</th>
             <th>Resultado</th>
@@ -109,8 +97,7 @@ const TeacherSectionGrades = () => {
         <tbody>
           {registrations.map((r) => (
             <tr key={r.id}>
-              <td>{students[r.studentId]?.run}</td>
-              <td>{students[r.studentId]?.fullName ?? `Estudiante ${r.studentId}`}</td>
+              <td>Estudiante {r.studentId}</td>
               <td>
                 <input
                   type="number"

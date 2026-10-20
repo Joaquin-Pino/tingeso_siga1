@@ -4,6 +4,10 @@ const getAll = () => {
   return httpClient.get("/api/students");
 };
 
+const getMe = () => {
+  return httpClient.get("/api/students/me");
+};
+
 const get = (id) => {
   return httpClient.get(`/api/students/${id}`);
 };
@@ -44,6 +48,7 @@ const remove = (id) => {
 
 export default {
   getAll,
+  getMe,
   get,
   getAcademicHistory,
   getAcademicAverage,

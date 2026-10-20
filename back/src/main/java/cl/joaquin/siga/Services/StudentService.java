@@ -52,6 +52,13 @@ public class StudentService {
         return toResponseDTO(student);
     }
 
+    // el estudiante autenticado: el sub del JWT de Keycloak es su keycloakId
+    public StudentResponseDTO getByKeycloakId(String keycloakId) {
+        Student student = studentRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new NotFoundException("No hay un estudiante asociado a la cuenta autenticada"));
+        return toResponseDTO(student);
+    }
+
     public List<AcademicRecordResponseDTO> getAcademicHistory(Long studentId) {
         if (!studentRepository.existsById(studentId)) {
             throw new NotFoundException("Estudiante no encontrado: " + studentId);

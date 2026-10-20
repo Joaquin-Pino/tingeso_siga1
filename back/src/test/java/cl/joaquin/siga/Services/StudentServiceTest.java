@@ -201,6 +201,21 @@ class StudentServiceTest {
     }
 
     @Test
+    void getByKeycloakId_returnsStudent() {
+        when(studentRepository.findByKeycloakId("kc"))
+                .thenReturn(Optional.of(studentInCareer(1L, 7L, StudentStatus.REGULAR)));
+
+        assertEquals("1-9", service.getByKeycloakId("kc").run());
+    }
+
+    @Test
+    void getByKeycloakId_unknownAccount_throws() {
+        when(studentRepository.findByKeycloakId("kc")).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.getByKeycloakId("kc"));
+    }
+
+    @Test
     void getById_notFound_throws() {
         when(studentRepository.findById(1L)).thenReturn(Optional.empty());
 

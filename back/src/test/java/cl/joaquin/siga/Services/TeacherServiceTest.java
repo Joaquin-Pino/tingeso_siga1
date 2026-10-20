@@ -71,6 +71,20 @@ class TeacherServiceTest {
     }
 
     @Test
+    void getByKeycloakId_returnsTeacher() {
+        when(teacherRepository.findByKeycloakId("kc")).thenReturn(Optional.of(existingTeacher()));
+
+        assertEquals("1-9", service.getByKeycloakId("kc").run());
+    }
+
+    @Test
+    void getByKeycloakId_unknownAccount_throws() {
+        when(teacherRepository.findByKeycloakId("kc")).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.getByKeycloakId("kc"));
+    }
+
+    @Test
     void getById_notFound_throws() {
         when(teacherRepository.findById(1L)).thenReturn(Optional.empty());
 
