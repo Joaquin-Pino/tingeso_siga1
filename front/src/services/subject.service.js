@@ -1,9 +1,5 @@
 import httpClient from "../http-common";
 
-const getAll = () => {
-  return httpClient.get("/api/subjects");
-};
-
 const get = (id) => {
   return httpClient.get(`/api/subjects/${id}`);
 };
@@ -20,4 +16,4 @@ const remove = (id) => {
   return httpClient.delete(`/api/subjects/${id}`);
 };
 
-export default { getAll, get, create, update, remove };
+export default { get, create, update, remove };

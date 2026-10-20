@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { NAV_ITEMS } from "../utils/navigation";
 
 const Navbar = () => {
   const { username, roles, hasAnyRole, logout } = useAuth();
@@ -11,13 +12,13 @@ const Navbar = () => {
           SIGA IPT
         </Link>
         <ul className="navbar-nav me-auto">
-          {hasAnyRole(["ADMIN"]) && (
-            <li className="nav-item">
-              <Link className="nav-link" to="/students">
-                Estudiantes
-              </Link>
+          {NAV_ITEMS.filter((item) => hasAnyRole(item.roles)).map((item) => (
+            <li className="nav-item" key={item.to}>
+              <NavLink className="nav-link" to={item.to}>
+                {item.label}
+              </NavLink>
             </li>
-          )}
+          ))}
         </ul>
         <span className="navbar-text me-3">
           {username} ({roles.join(", ")})
