@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     authenticated: keycloak.authenticated,
     username: keycloak.tokenParsed?.preferred_username,
+    email: keycloak.tokenParsed?.email,
     roles,
     hasAnyRole: (allowed) => allowed.some((r) => roles.includes(r)),
     logout: () => keycloak.logout({ redirectUri: window.location.origin }),

@@ -17,8 +17,11 @@ import PeriodDetail from "./pages/PeriodDetail";
 import PeriodEnrollments from "./pages/PeriodEnrollments";
 import SectionForm from "./pages/SectionForm";
 import StudentRegistrations from "./pages/StudentRegistrations";
+import TeacherSections from "./pages/TeacherSections";
+import TeacherSectionGrades from "./pages/TeacherSectionGrades";
 import NotFound from "./pages/NotFound";
 
+const teacher = (element) => <PrivateRoute element={element} rolesAllowed={["TEACHER"]} />;
 const admin = (element) => <PrivateRoute element={element} rolesAllowed={["ADMIN"]} />;
 
 function App() {
@@ -53,6 +56,9 @@ function App() {
           <Route path="/periods/:id/enrollments" element={admin(<PeriodEnrollments />)} />
           <Route path="/periods/:periodId/sections/new" element={admin(<SectionForm />)} />
           <Route path="/periods/:periodId/sections/:sectionId/edit" element={admin(<SectionForm />)} />
+
+          <Route path="/my-sections" element={teacher(<TeacherSections />)} />
+          <Route path="/my-sections/:sectionId" element={teacher(<TeacherSectionGrades />)} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

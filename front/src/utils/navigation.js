@@ -5,4 +5,5 @@ export const NAV_ITEMS = [
   { to: "/teachers", label: "Docentes", description: "Registro y estado de docentes", roles: ["ADMIN"] },
   { to: "/careers", label: "Carreras", description: "Carreras, planes de estudio y asignaturas", roles: ["ADMIN"] },
   { to: "/periods", label: "Períodos", description: "Períodos, oferta de secciones, matrícula y cierre", roles: ["ADMIN"] },
+  { to: "/my-sections", label: "Mis secciones", description: "Secciones a cargo y registro de notas", roles: ["TEACHER"] },
 ];
