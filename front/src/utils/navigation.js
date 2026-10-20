@@ -6,4 +6,9 @@ export const NAV_ITEMS = [
   { to: "/careers", label: "Carreras", description: "Carreras, planes de estudio y asignaturas", roles: ["ADMIN"] },
   { to: "/periods", label: "Períodos", description: "Períodos, oferta de secciones, matrícula y cierre", roles: ["ADMIN"] },
   { to: "/my-sections", label: "Mis secciones", description: "Secciones a cargo y registro de notas", roles: ["TEACHER"] },
+  { to: "/my-profile", label: "Mi perfil", description: "Datos, plan de estudios y promedio", roles: ["STUDENT"] },
+  { to: "/my-history", label: "Mi historial", description: "Asignaturas cursadas, notas y resultados", roles: ["STUDENT"] },
+  { to: "/offering", label: "Oferta", description: "Secciones disponibles en el período abierto", roles: ["STUDENT"] },
+  { to: "/registration", label: "Inscribir", description: "Inscripción de asignaturas del período", roles: ["STUDENT"] },
+  { to: "/my-registrations", label: "Mis inscripciones", description: "Inscripciones y anulaciones", roles: ["STUDENT"] },
 ];

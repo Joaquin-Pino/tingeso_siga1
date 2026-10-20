@@ -19,9 +19,15 @@ import SectionForm from "./pages/SectionForm";
 import StudentRegistrations from "./pages/StudentRegistrations";
 import TeacherSections from "./pages/TeacherSections";
 import TeacherSectionGrades from "./pages/TeacherSectionGrades";
+import StudentProfile from "./pages/StudentProfile";
+import StudentHistory from "./pages/StudentHistory";
+import StudentOffering from "./pages/StudentOffering";
+import StudentRegistration from "./pages/StudentRegistration";
+import StudentMyRegistrations from "./pages/StudentMyRegistrations";
 import NotFound from "./pages/NotFound";
 
 const teacher = (element) => <PrivateRoute element={element} rolesAllowed={["TEACHER"]} />;
+const student = (element) => <PrivateRoute element={element} rolesAllowed={["STUDENT"]} />;
 const admin = (element) => <PrivateRoute element={element} rolesAllowed={["ADMIN"]} />;
 
 function App() {
@@ -59,6 +65,12 @@ function App() {
 
           <Route path="/my-sections" element={teacher(<TeacherSections />)} />
           <Route path="/my-sections/:sectionId" element={teacher(<TeacherSectionGrades />)} />
+
+          <Route path="/my-profile" element={student(<StudentProfile />)} />
+          <Route path="/my-history" element={student(<StudentHistory />)} />
+          <Route path="/offering" element={student(<StudentOffering />)} />
+          <Route path="/registration" element={student(<StudentRegistration />)} />
+          <Route path="/my-registrations" element={student(<StudentMyRegistrations />)} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
