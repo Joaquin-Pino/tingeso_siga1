@@ -40,6 +40,12 @@ public class StudyPlanService {
     // El plan nuevo queda vigente y el vigente anterior de la carrera pasa a NOT_CURRENT. Va en una
     // transacción para que no queden dos vigentes ni ninguno si algo falla a la mitad
     @Transactional
+    public String getStudyPlanCodeById(Long studyPlanId) {
+        StudyPlan plan = studyPlanRepository.findById(studyPlanId)
+                .orElseThrow(() -> new NotFoundException("Plan de estudios no encontrado: " + studyPlanId));
+        return plan.getCode();
+    }
+
     public StudyPlanResponseDTO createStudyPlan(StudyPlanCreateDTO dto) {
         if (!careerRepository.existsById(dto.careerId())) {
             throw new NotFoundException("Carrera no encontrada: " + dto.careerId());

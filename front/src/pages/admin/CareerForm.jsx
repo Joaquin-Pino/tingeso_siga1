@@ -33,6 +33,7 @@ const CareerForm = () => {
       startYear: Number(form.startYear),
       vacancies: Number(form.vacancies),
     };
+    
     const request = id
       ? careerService.update(id, data)
       : careerService.create({ ...data, code: form.code });

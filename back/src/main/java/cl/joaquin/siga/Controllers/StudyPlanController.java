@@ -42,4 +42,9 @@ public class StudyPlanController {
     public void delete(@PathVariable Long id) {
         studyPlanService.deleteStudyPlan(id);
     }
+
+    @GetMapping("/{id}/code")
+    public String getCode(@PathVariable Long id) {
+        return studyPlanService.getStudyPlanCodeById(id);
+    }
 }

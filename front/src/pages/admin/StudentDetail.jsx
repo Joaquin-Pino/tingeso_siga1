@@ -6,10 +6,12 @@ import StatusBadge from "../../components/StatusBadge";
 import ErrorAlert from "../../components/ErrorAlert";
 import { getErrorMessage } from "../../utils/errors";
 import { MANUAL_STUDENT_STATUSES } from "../../utils/labels";
+import studyPlanService from "../../services/studyPlan.service";
 
 const StudentDetail = () => {
   const { id } = useParams();
   const [student, setStudent] = useState(null);
+  const [studyPlanCode, setStudyPlanCode] = useState(null);
   const [history, setHistory] = useState([]);
   const [average, setAverage] = useState(null);
   const [careers, setCareers] = useState([]);
@@ -33,6 +35,10 @@ const StudentDetail = () => {
         careerService
           .getStudyPlans(s.careerId)
           .then((r) => setPlans(r.data))
+          .catch(fail);
+        studyPlanService
+          .getCode(s.studyPlanId)
+          .then((r) => setStudyPlanCode(r.data))
           .catch(fail);
       })
       .catch(fail);
@@ -77,7 +83,7 @@ const StudentDetail = () => {
         </div>
       </div>
       <p className="text-muted">
-        RUN {student.run} · {student.email}
+        RUN {student.run} , {student.email} , plan activo: {studyPlanCode}
       </p>
       <ErrorAlert message={error} onClose={() => setError("")} />
 

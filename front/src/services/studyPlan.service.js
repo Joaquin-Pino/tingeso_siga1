@@ -16,4 +16,8 @@ const remove = (id) => {
   return httpClient.delete(`/api/study-plans/${id}`);
 };
 
-export default { getSubjects, create, update, remove };
+const getCode = (id) => {
+  return httpClient.get(`/api/study-plans/${id}/code`);
+};
+
+export default { getSubjects, create, update, remove, getCode };

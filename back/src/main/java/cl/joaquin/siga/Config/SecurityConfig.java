@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // documentación de la API (Swagger UI): pública; sus endpoints siguen protegidos
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
                         // el usuario autenticado
                         .requestMatchers(HttpMethod.GET, "/api/students/me").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/teachers/me").hasRole("TEACHER")

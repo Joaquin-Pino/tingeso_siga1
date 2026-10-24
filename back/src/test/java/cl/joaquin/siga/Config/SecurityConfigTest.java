@@ -69,6 +69,13 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/careers")).andExpect(status().isUnauthorized());
     }
 
+    // en este slice no está el controller de springdoc: un 404 (y no 401) prueba que el filtro deja pasar la ruta
+    @Test
+    void apiDocs_arePublic() throws Exception {
+        mockMvc.perform(get("/v3/api-docs")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/swagger-ui/index.html")).andExpect(status().isNotFound());
+    }
+
     @Test
     void anyRole_canReadCatalog() throws Exception {
         mockMvc.perform(get("/api/careers").with(as("STUDENT"))).andExpect(status().isOk());
