@@ -26,6 +26,7 @@ import StudentRegistration from "./pages/student/StudentRegistration";
 import StudentMyRegistrations from "./pages/student/StudentMyRegistrations";
 import NotFound from "./pages/NotFound";
 
+import StudyPlanList from "./pages/admin/StudyPlanList";
 const teacher = (element) => <PrivateRoute element={element} rolesAllowed={["TEACHER"]} />;
 const student = (element) => <PrivateRoute element={element} rolesAllowed={["STUDENT"]} />;
 const admin = (element) => <PrivateRoute element={element} rolesAllowed={["ADMIN"]} />;
@@ -62,6 +63,9 @@ function App() {
           <Route path="/periods/:id/enrollments" element={admin(<PeriodEnrollments />)} />
           <Route path="/periods/:periodId/sections/new" element={admin(<SectionForm />)} />
           <Route path="/periods/:periodId/sections/:sectionId/edit" element={admin(<SectionForm />)} />
+
+          <Route path="/study-plans" element={admin(<StudyPlanList />)} />
+
 
           <Route path="/my-sections" element={teacher(<TeacherSections />)} />
           <Route path="/my-sections/:sectionId" element={teacher(<TeacherSectionGrades />)} />
