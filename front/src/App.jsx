@@ -65,6 +65,7 @@ function App() {
           <Route path="/periods/:periodId/sections/:sectionId/edit" element={admin(<SectionForm />)} />
 
           <Route path="/study-plans" element={admin(<StudyPlanList />)} />
+          <Route path="/subjects/new" element={admin(<SubjectForm />)} />
 
 
           <Route path="/my-sections" element={teacher(<TeacherSections />)} />

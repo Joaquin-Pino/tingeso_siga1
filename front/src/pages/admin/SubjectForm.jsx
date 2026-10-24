@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import careerService from "../../services/career.service";
 import studyPlanService from "../../services/studyPlan.service";
 import subjectService from "../../services/subject.service";
 import FormField from "../../components/FormField";
@@ -18,18 +19,52 @@ const EMPTY = {
 };
 
 const SubjectForm = () => {
-  const { careerId, planId, subjectId } = useParams();
+  const { careerId: routeCareerId, planId: routePlanId, subjectId } = useParams();
   const navigate = useNavigate();
+  // sin plan en la URL (/subjects/new, desde el navbar) el plan se elige en el formulario
+  const standalone = !routePlanId;
   const [form, setForm] = useState(EMPTY);
   const [planSubjects, setPlanSubjects] = useState([]);
+  const [careers, setCareers] = useState([]);
+  const [plans, setPlans] = useState([]);
+  const [pickedCareerId, setPickedCareerId] = useState("");
+  const [pickedPlanId, setPickedPlanId] = useState("");
   const [error, setError] = useState("");
-  const back = `/careers/${careerId}/plans/${planId}`;
+  const careerId = standalone ? pickedCareerId : routeCareerId;
+  const planId = standalone ? pickedPlanId : routePlanId;
+  const planPage = `/careers/${careerId}/plans/${planId}`;
+  const back = standalone ? "/home" : planPage;
 
   useEffect(() => {
-    studyPlanService
-      .getSubjects(planId)
-      .then((response) => setPlanSubjects(response.data))
+    if (!standalone) return;
+    careerService
+      .getAll()
+      .then((response) => {
+        setCareers(response.data);
+        if (response.data.length > 0) setPickedCareerId(String(response.data[0].id));
+      })
       .catch((e) => setError(getErrorMessage(e)));
+  }, [standalone]);
+
+  useEffect(() => {
+    if (!pickedCareerId) return;
+    careerService
+      .getStudyPlans(pickedCareerId)
+      .then((response) => {
+        setPlans(response.data);
+        setPickedPlanId(response.data.length > 0 ? String(response.data[0].id) : "");
+        setForm((current) => ({ ...current, prerequisiteIds: [] }));
+      })
+      .catch((e) => setError(getErrorMessage(e)));
+  }, [pickedCareerId]);
+
+  useEffect(() => {
+    if (planId) {
+      studyPlanService
+        .getSubjects(planId)
+        .then((response) => setPlanSubjects(response.data))
+        .catch((e) => setError(getErrorMessage(e)));
+    }
     if (!subjectId) return;
     subjectService
       .get(subjectId)
@@ -39,6 +74,12 @@ const SubjectForm = () => {
 
   const handleChange = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value });
+  };
+
+  // los prerrequisitos pertenecen al plan: al cambiar de plan se descartan los marcados
+  const handlePlanChange = (event) => {
+    setPickedPlanId(event.target.value);
+    setForm({ ...form, prerequisiteIds: [] });
   };
 
   const togglePrerequisite = (id) => {
@@ -68,12 +109,12 @@ const SubjectForm = () => {
     const request = subjectId
       ? subjectService.update(subjectId, data)
       : subjectService.create({ ...data, studyPlanId: Number(planId) });
-    request.then(() => navigate(back)).catch((e) => setError(getErrorMessage(e)));
+    request.then(() => navigate(planPage)).catch((e) => setError(getErrorMessage(e)));
   };
 
   // solo asignaturas de semestres anteriores pueden ser prerrequisito
   const candidates = [];
-  for (const s of planSubjects) {
+  for (const s of planId ? planSubjects : []) {
     if (s.semester < Number(form.semester)) candidates.push(s);
   }
 
@@ -82,6 +123,29 @@ const SubjectForm = () => {
       <h2>{subjectId ? "Editar asignatura" : "Nueva asignatura"}</h2>
       <ErrorAlert message={error} onClose={() => setError("")} />
       <form onSubmit={handleSubmit}>
+        {standalone && (
+          <div className="row">
+            <div className="col-md-6">
+              <FormField label="Carrera" name="careerId" value={pickedCareerId} onChange={(e) => setPickedCareerId(e.target.value)} required>
+                {careers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </FormField>
+            </div>
+            <div className="col-md-6">
+              <FormField label="Plan de estudios" name="studyPlanId" value={pickedPlanId} onChange={handlePlanChange} required>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.code}
+                    {p.status === "CURRENT" ? " (vigente)" : ""}
+                  </option>
+                ))}
+              </FormField>
+            </div>
+          </div>
+        )}
         <div className="row">
           <div className="col-md-4">
             <FormField label="Código" name="code" value={form.code} onChange={handleChange} required />
@@ -130,7 +194,7 @@ const SubjectForm = () => {
           ))}
         </div>
 
-        <button type="submit" className="btn btn-primary me-2">
+        <button type="submit" className="btn btn-primary me-2" disabled={!planId}>
           Guardar
         </button>
         <button type="button" className="btn btn-outline-secondary" onClick={() => navigate(back)}>
