@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import registrationService from "../services/registration.service";
-import studentService from "../services/student.service";
-import academicPeriodService from "../services/academicPeriod.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
+import registrationService from "../../services/registration.service";
+import studentService from "../../services/student.service";
+import academicPeriodService from "../../services/academicPeriod.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
 
 const StudentRegistrations = () => {
   const { id } = useParams();

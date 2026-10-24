@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import academicPeriodService from "../services/academicPeriod.service";
-import teacherService from "../services/teacher.service";
-import sectionService from "../services/section.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
-import { formatBlocks } from "../utils/schedule";
+import academicPeriodService from "../../services/academicPeriod.service";
+import teacherService from "../../services/teacher.service";
+import sectionService from "../../services/section.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
+import { formatBlocks } from "../../utils/schedule";
 
 const PeriodDetail = () => {
   const { id } = useParams();

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import careerService from "../services/career.service";
-import studyPlanService from "../services/studyPlan.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import careerService from "../../services/career.service";
+import studyPlanService from "../../services/studyPlan.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const CareerDetail = () => {
   const { id } = useParams();

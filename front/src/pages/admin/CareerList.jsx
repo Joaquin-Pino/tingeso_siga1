@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import careerService from "../services/career.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import careerService from "../../services/career.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const CareerList = () => {
   const [careers, setCareers] = useState([]);

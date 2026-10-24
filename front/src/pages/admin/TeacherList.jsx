@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import teacherService from "../services/teacher.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { degreeLabel } from "../utils/labels";
+import teacherService from "../../services/teacher.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { degreeLabel } from "../../utils/labels";
 
 const TeacherList = () => {
   const [teachers, setTeachers] = useState([]);

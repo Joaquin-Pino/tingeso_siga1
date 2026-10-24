@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import academicPeriodService from "../services/academicPeriod.service";
-import enrollmentService from "../services/enrollment.service";
-import studentService from "../services/student.service";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import academicPeriodService from "../../services/academicPeriod.service";
+import enrollmentService from "../../services/enrollment.service";
+import studentService from "../../services/student.service";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const PeriodEnrollments = () => {
   const { id } = useParams();

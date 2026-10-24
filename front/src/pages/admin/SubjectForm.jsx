@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import studyPlanService from "../services/studyPlan.service";
-import subjectService from "../services/subject.service";
-import FormField from "../components/FormField";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import studyPlanService from "../../services/studyPlan.service";
+import subjectService from "../../services/subject.service";
+import FormField from "../../components/FormField";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const EMPTY = {
   code: "",

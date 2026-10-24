@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import sectionService from "../services/section.service";
-import teacherService from "../services/teacher.service";
-import FormField from "../components/FormField";
-import ScheduleGrid from "../components/ScheduleGrid";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
+import sectionService from "../../services/section.service";
+import teacherService from "../../services/teacher.service";
+import FormField from "../../components/FormField";
+import ScheduleGrid from "../../components/ScheduleGrid";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
 
 const SectionForm = () => {
   const { periodId, sectionId } = useParams();

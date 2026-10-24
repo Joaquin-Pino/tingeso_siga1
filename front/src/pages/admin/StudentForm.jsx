@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import studentService from "../services/student.service";
-import careerService from "../services/career.service";
-import FormField from "../components/FormField";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import studentService from "../../services/student.service";
+import careerService from "../../services/career.service";
+import FormField from "../../components/FormField";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const EMPTY = { temporaryPassword: "", run: "", fullName: "", email: "", careerId: "" };
 

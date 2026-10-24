@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import studentService from "../services/student.service";
-import careerService from "../services/career.service";
-import useCurrentStudent from "../hooks/useCurrentStudent";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import studentService from "../../services/student.service";
+import careerService from "../../services/career.service";
+import useCurrentStudent from "../../hooks/useCurrentStudent";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const StudentProfile = () => {
   const { student, error: studentError } = useCurrentStudent();

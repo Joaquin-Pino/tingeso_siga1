@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import teacherService from "../services/teacher.service";
-import academicPeriodService from "../services/academicPeriod.service";
-import useCurrentTeacher from "../hooks/useCurrentTeacher";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
-import { formatBlocks } from "../utils/schedule";
+import teacherService from "../../services/teacher.service";
+import academicPeriodService from "../../services/academicPeriod.service";
+import useCurrentTeacher from "../../hooks/useCurrentTeacher";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
+import { formatBlocks } from "../../utils/schedule";
 
 const TeacherSections = () => {
   const { teacher, error: teacherError } = useCurrentTeacher();

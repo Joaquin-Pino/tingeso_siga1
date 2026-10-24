@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import careerService from "../services/career.service";
-import FormField from "../components/FormField";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
+import careerService from "../../services/career.service";
+import FormField from "../../components/FormField";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
 
 const EMPTY = { code: "", name: "", description: "", startYear: "", vacancies: "" };
 

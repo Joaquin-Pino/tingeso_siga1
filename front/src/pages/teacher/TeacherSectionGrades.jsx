@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import gradeService from "../services/grade.service";
-import sectionService from "../services/section.service";
-import academicPeriodService from "../services/academicPeriod.service";
-import useCurrentTeacher from "../hooks/useCurrentTeacher";
-import ScheduleGrid from "../components/ScheduleGrid";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
+import gradeService from "../../services/grade.service";
+import sectionService from "../../services/section.service";
+import academicPeriodService from "../../services/academicPeriod.service";
+import useCurrentTeacher from "../../hooks/useCurrentTeacher";
+import ScheduleGrid from "../../components/ScheduleGrid";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
 
 const TeacherSectionGrades = () => {
   const { sectionId } = useParams();

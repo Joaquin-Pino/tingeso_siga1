@@ -1,8 +1,8 @@
-import useCurrentStudent from "../hooks/useCurrentStudent";
-import useOpenPeriod from "../hooks/useOpenPeriod";
-import usePlanOffering from "../hooks/usePlanOffering";
-import ErrorAlert from "../components/ErrorAlert";
-import { formatBlocks } from "../utils/schedule";
+import useCurrentStudent from "../../hooks/useCurrentStudent";
+import useOpenPeriod from "../../hooks/useOpenPeriod";
+import usePlanOffering from "../../hooks/usePlanOffering";
+import ErrorAlert from "../../components/ErrorAlert";
+import { formatBlocks } from "../../utils/schedule";
 
 const StudentOffering = () => {
   const { student, error: studentError } = useCurrentStudent();

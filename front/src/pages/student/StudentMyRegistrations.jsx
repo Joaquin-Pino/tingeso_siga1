@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import registrationService from "../services/registration.service";
-import academicPeriodService from "../services/academicPeriod.service";
-import useCurrentStudent from "../hooks/useCurrentStudent";
-import StatusBadge from "../components/StatusBadge";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { loadCatalog } from "../utils/catalog";
+import registrationService from "../../services/registration.service";
+import academicPeriodService from "../../services/academicPeriod.service";
+import useCurrentStudent from "../../hooks/useCurrentStudent";
+import StatusBadge from "../../components/StatusBadge";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { loadCatalog } from "../../utils/catalog";
 
 const StudentMyRegistrations = () => {
   const { student, error: studentError } = useCurrentStudent();

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import registrationService from "../services/registration.service";
-import useCurrentStudent from "../hooks/useCurrentStudent";
-import useOpenPeriod from "../hooks/useOpenPeriod";
-import usePlanOffering from "../hooks/usePlanOffering";
-import ScheduleGrid from "../components/ScheduleGrid";
-import ErrorAlert from "../components/ErrorAlert";
-import { getErrorMessage } from "../utils/errors";
-import { formatBlocks } from "../utils/schedule";
+import registrationService from "../../services/registration.service";
+import useCurrentStudent from "../../hooks/useCurrentStudent";
+import useOpenPeriod from "../../hooks/useOpenPeriod";
+import usePlanOffering from "../../hooks/usePlanOffering";
+import ScheduleGrid from "../../components/ScheduleGrid";
+import ErrorAlert from "../../components/ErrorAlert";
+import { getErrorMessage } from "../../utils/errors";
+import { formatBlocks } from "../../utils/schedule";
 
 const MIN_SECTIONS = 3;
 const MAX_SECTIONS = 6;
