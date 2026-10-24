@@ -48,11 +48,11 @@ services:
       retries: 20
       start_period: 30s
 
-  back:
+  # las 3 instancias del back comparten la misma config (ancla &back); cada una es un servicio con nombre fijo
+  # para que Nginx las referencie por nombre
+  back1: &back
     image: ${DOCKERHUB_USER:?define DOCKERHUB_USER en .env}/siga-back:${BACK_TAG:-latest}
     restart: unless-stopped
-    deploy:
-      replicas: 3
     depends_on:
       db:
         condition: service_healthy
@@ -69,9 +69,35 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?define KEYCLOAK_ADMIN_CLIENT_SECRET en .env}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?define CORS_ALLOWED_ORIGINS en .env}
       TZ: ${TZ:-America/Santiago}
-    # provisorio hasta tener Nginx: un puerto del host por réplica (8081-8083)
+    # provisorio hasta activar Nginx: un puerto del host por instancia (8081-8083)
     ports:
-      - "8081-8083:8080"
+      - "8081:8080"
+
+  back2:
+    <<: *back
+    ports:
+      - "8082:8080"
+
+  back3:
+    <<: *back
+    ports:
+      - "8083:8080"
+
+  # Balanceador del back.
+  #   - quitar los `ports` de back1/back2/back3 (solo se llega a ellas por Nginx)
+  #   - apuntar VITE_BACKEND_URL del front a http://localhost:8090
+  #   - ver nginx-backend.conf
+  # nginx-backend:
+  #   image: nginx:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8090:8090"
+  #   volumes:
+  #     - ./nginx-backend.conf:/etc/nginx/nginx.conf:ro,z
+  #   depends_on:
+  #     - back1
+  #     - back2
+  #     - back3
 
 volumes:
   pgdata:
