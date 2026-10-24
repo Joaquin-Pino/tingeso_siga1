@@ -2,8 +2,16 @@ import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { NAV_ITEMS } from "../utils/navigation";
 
+const APP_ROLES = ["ADMIN", "TEACHER", "STUDENT"];
+
 const Navbar = () => {
   const { username, roles, hasAnyRole, logout } = useAuth();
+
+  // Keycloak agrega roles propios (default-roles-*, offline_access, uma_authorization) que no son de la app
+  const appRoles = [];
+  for (const role of roles) {
+    if (APP_ROLES.includes(role)) appRoles.push(role);
+  }
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
@@ -21,7 +29,7 @@ const Navbar = () => {
           ))}
         </ul>
         <span className="navbar-text me-3">
-          {username} ({roles.join(", ")})
+          {username} ({appRoles.join(", ")})
         </span>
         <button className="btn btn-outline-light btn-sm" onClick={logout}>
           Salir

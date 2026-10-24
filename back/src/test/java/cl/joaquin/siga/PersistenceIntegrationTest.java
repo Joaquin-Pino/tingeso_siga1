@@ -35,6 +35,7 @@ import cl.joaquin.siga.Repositories.University.SubjectPrerequisiteRepository;
 import cl.joaquin.siga.Repositories.University.SubjectRepository;
 import cl.joaquin.siga.Services.AcademicPeriodService;
 import cl.joaquin.siga.Services.CareerService;
+import cl.joaquin.siga.Services.KeycloakAdminService;
 import cl.joaquin.siga.Services.SectionService;
 import cl.joaquin.siga.Services.StudentService;
 import cl.joaquin.siga.Services.StudyPlanService;
@@ -46,12 +47,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 // Lo que los tests con mocks no pueden probar: la unique de current_career_id, las unique constraints
 // (la defensa real entre réplicas) y el orden de flush que los Services necesitan para no violarlas
@@ -62,6 +67,8 @@ class PersistenceIntegrationTest {
     @Autowired CareerService careerService;
     @Autowired StudyPlanService studyPlanService;
     @Autowired SubjectService subjectService;
+    // Keycloak no forma parte de estas pruebas: devuelve un id único por cuenta creada
+    @MockitoBean KeycloakAdminService keycloakAdminService;
     @Autowired StudentService studentService;
     @Autowired TeacherService teacherService;
     @Autowired AcademicPeriodService academicPeriodService;
@@ -83,6 +90,8 @@ class PersistenceIntegrationTest {
 
     @BeforeEach
     void cleanDatabaseAndCreateCareer() {
+        when(keycloakAdminService.createUser(anyString(), anyString(), anyString(), anyString()))
+                .thenAnswer(invocation -> UUID.randomUUID().toString());
         courseRegistrationRepository.deleteAll();
         periodEnrollmentRepository.deleteAll();
         sectionScheduleBlockRepository.deleteAll();
@@ -196,8 +205,10 @@ class PersistenceIntegrationTest {
     void saveStudent_persistsLinkedToCurrentPlan() {
         Long planId = studyPlanService.createStudyPlan(new StudyPlanCreateDTO(careerId, "2026.1")).id();
 
+        when(keycloakAdminService.createUser("a@x.cl", "Ana", "Temp1234", "STUDENT")).thenReturn("kc-1");
+
         Long studentId = studentService.saveStudent(
-                new StudentCreateDTO("kc-1", "1-9", "Ana", "a@x.cl", careerId)).id();
+                new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", careerId)).id();
 
         Student saved = studentRepository.findById(studentId).orElseThrow();
         assertEquals(planId, saved.getStudyPlanId());

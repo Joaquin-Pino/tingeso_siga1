@@ -81,19 +81,19 @@ class TeacherControllerTest {
         when(teacherService.saveTeacher(any(TeacherCreateDTO.class))).thenReturn(response(TeacherStatus.ACTIVE));
 
         mockMvc.perform(post("/api/teachers").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"keycloakId": "kc", "run": "1-9", "fullName": "Pedro", "email": "p@x.cl",
+                        {"temporaryPassword": "Temp1234", "run": "1-9", "fullName": "Pedro", "email": "p@x.cl",
                          "professionalTitle": "Ingeniero", "academicDegree": "MASTER"}
                         """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
         verify(teacherService).saveTeacher(
-                new TeacherCreateDTO("kc", "1-9", "Pedro", "p@x.cl", "Ingeniero", AcademicDegree.MASTER));
+                new TeacherCreateDTO("Temp1234", "1-9", "Pedro", "p@x.cl", "Ingeniero", AcademicDegree.MASTER));
     }
 
     @Test
     void create_missingDegree_returns400() throws Exception {
         mockMvc.perform(post("/api/teachers").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"keycloakId": "kc", "run": "1-9", "fullName": "Pedro", "email": "p@x.cl",
+                        {"temporaryPassword": "Temp1234", "run": "1-9", "fullName": "Pedro", "email": "p@x.cl",
                          "professionalTitle": "Ingeniero"}
                         """))
                 .andExpect(status().isBadRequest());

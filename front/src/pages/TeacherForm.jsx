@@ -7,7 +7,7 @@ import { getErrorMessage } from "../utils/errors";
 import { ACADEMIC_DEGREES } from "../utils/labels";
 
 const EMPTY = {
-  keycloakId: "",
+  temporaryPassword: "",
   run: "",
   fullName: "",
   email: "",
@@ -43,7 +43,7 @@ const TeacherForm = () => {
     };
     const request = id
       ? teacherService.update(id, data)
-      : teacherService.create({ ...data, keycloakId: form.keycloakId, run: form.run });
+      : teacherService.create({ ...data, temporaryPassword: form.temporaryPassword, run: form.run });
     request.then(() => navigate("/teachers")).catch((e) => setError(getErrorMessage(e)));
   };
 
@@ -54,7 +54,7 @@ const TeacherForm = () => {
       <form onSubmit={handleSubmit}>
         {!id && (
           <>
-            <FormField label="ID de Keycloak (sub)" name="keycloakId" value={form.keycloakId} onChange={handleChange} required />
+            <FormField label="Contraseña temporal" name="temporaryPassword" type="password" autoComplete="new-password" value={form.temporaryPassword} onChange={handleChange} required />
             <FormField label="RUN" name="run" value={form.run} onChange={handleChange} required />
           </>
         )}

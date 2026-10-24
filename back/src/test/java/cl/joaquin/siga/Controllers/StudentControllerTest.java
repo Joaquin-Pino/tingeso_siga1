@@ -37,7 +37,7 @@ class StudentControllerTest {
     @MockitoBean StudentService studentService;
 
     private static final String VALID_CREATE_BODY = """
-            {"keycloakId": "kc", "run": "1-9", "fullName": "Ana", "email": "a@x.cl", "careerId": 1}
+            {"temporaryPassword": "Temp1234", "run": "1-9", "fullName": "Ana", "email": "a@x.cl", "careerId": 1}
             """;
 
     private static StudentResponseDTO response(StudentStatus status) {
@@ -80,13 +80,13 @@ class StudentControllerTest {
         mockMvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON).content(VALID_CREATE_BODY))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("REGULAR"));
-        verify(studentService).saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L));
+        verify(studentService).saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L));
     }
 
     @Test
     void create_invalidEmail_returns400WithFieldName() throws Exception {
         String body = """
-                {"keycloakId": "kc", "run": "1-9", "fullName": "Ana", "email": "no-es-correo", "careerId": 1}
+                {"temporaryPassword": "Temp1234", "run": "1-9", "fullName": "Ana", "email": "no-es-correo", "careerId": 1}
                 """;
 
         mockMvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON).content(body))
@@ -98,7 +98,7 @@ class StudentControllerTest {
     @Test
     void create_missingCareer_returns400() throws Exception {
         String body = """
-                {"keycloakId": "kc", "run": "1-9", "fullName": "Ana", "email": "a@x.cl"}
+                {"temporaryPassword": "Temp1234", "run": "1-9", "fullName": "Ana", "email": "a@x.cl"}
                 """;
 
         mockMvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON).content(body))

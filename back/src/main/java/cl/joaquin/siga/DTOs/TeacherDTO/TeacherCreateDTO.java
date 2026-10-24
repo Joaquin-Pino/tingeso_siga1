@@ -7,7 +7,8 @@ import jakarta.validation.constraints.NotNull;
 
 // sin estado: el docente siempre queda ACTIVE al registrarse (lo asigna el Service)
 public record TeacherCreateDTO(
-        @NotBlank String keycloakId,
+        // contraseña temporal para la cuenta de Keycloak, que el Service crea; no se guarda en la app
+        @NotBlank String temporaryPassword,
         @NotBlank String run,
         @NotBlank String fullName,
         @NotBlank @Email String email,

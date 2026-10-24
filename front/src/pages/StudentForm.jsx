@@ -6,7 +6,7 @@ import FormField from "../components/FormField";
 import ErrorAlert from "../components/ErrorAlert";
 import { getErrorMessage } from "../utils/errors";
 
-const EMPTY = { keycloakId: "", run: "", fullName: "", email: "", careerId: "" };
+const EMPTY = { temporaryPassword: "", run: "", fullName: "", email: "", careerId: "" };
 
 const StudentForm = () => {
   const { id } = useParams();
@@ -46,7 +46,7 @@ const StudentForm = () => {
     const request = id
       ? studentService.update(id, { fullName: form.fullName, email: form.email })
       : studentService.create({
-          keycloakId: form.keycloakId,
+          temporaryPassword: form.temporaryPassword,
           run: form.run,
           fullName: form.fullName,
           email: form.email,
@@ -62,7 +62,7 @@ const StudentForm = () => {
       <form onSubmit={handleSubmit}>
         {!id && (
           <>
-            <FormField label="ID de Keycloak (sub)" name="keycloakId" value={form.keycloakId} onChange={handleChange} required />
+            <FormField label="Contraseña temporal" name="temporaryPassword" type="password" autoComplete="new-password" value={form.temporaryPassword} onChange={handleChange} required />
             <FormField label="RUN" name="run" value={form.run} onChange={handleChange} required />
           </>
         )}

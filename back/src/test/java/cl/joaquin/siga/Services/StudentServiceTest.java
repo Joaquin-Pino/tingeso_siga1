@@ -21,6 +21,8 @@ import cl.joaquin.siga.Repositories.University.CareerRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -42,6 +44,7 @@ class StudentServiceTest {
     @Mock StudyPlanRepository studyPlanRepository;
     @Mock CourseRegistrationRepository courseRegistrationRepository;
     @Mock AcademicRecordRepository academicRecordRepository;
+    @Mock KeycloakAdminService keycloakAdminService;
     @InjectMocks StudentService service;
 
     private StudyPlan currentPlan(Long id) {
@@ -57,12 +60,30 @@ class StudentServiceTest {
         when(careerRepository.existsByIdAndStatus(1L, CareerStatus.ACTIVE)).thenReturn(true);
         when(studyPlanRepository.findByCareerIdAndStatus(1L, StudyPlanStatus.CURRENT))
                 .thenReturn(Optional.of(currentPlan(7L)));
+        when(keycloakAdminService.createUser("a@x.cl", "Ana", "Temp1234", "STUDENT")).thenReturn("kc-id");
         when(studentRepository.save(any(Student.class))).thenAnswer(i -> i.getArgument(0));
 
-        StudentResponseDTO result = service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L));
+        StudentResponseDTO result = service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L));
 
         assertEquals(StudentStatus.REGULAR, result.status());
         assertEquals(7L, result.studyPlanId());
+        ArgumentCaptor<Student> saved = ArgumentCaptor.forClass(Student.class);
+        verify(studentRepository).save(saved.capture());
+        assertEquals("kc-id", saved.getValue().getKeycloakId());
+    }
+
+    @Test
+    void saveStudent_dbFailure_deletesKeycloakAccount() {
+        when(careerRepository.existsById(1L)).thenReturn(true);
+        when(careerRepository.existsByIdAndStatus(1L, CareerStatus.ACTIVE)).thenReturn(true);
+        when(studyPlanRepository.findByCareerIdAndStatus(1L, StudyPlanStatus.CURRENT))
+                .thenReturn(Optional.of(currentPlan(7L)));
+        when(keycloakAdminService.createUser("a@x.cl", "Ana", "Temp1234", "STUDENT")).thenReturn("kc-id");
+        when(studentRepository.save(any(Student.class))).thenThrow(new DataIntegrityViolationException("dup"));
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
+        verify(keycloakAdminService).deleteUser("kc-id");
     }
 
     @Test
@@ -71,8 +92,9 @@ class StudentServiceTest {
         when(careerRepository.existsByIdAndStatus(1L, CareerStatus.ACTIVE)).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class,
-                () -> service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L)));
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
         verify(studentRepository, never()).save(any());
+        verifyNoInteractions(keycloakAdminService);
     }
 
     @Test
@@ -80,7 +102,7 @@ class StudentServiceTest {
         when(studentRepository.existsByRun("1-9")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class,
-                () -> service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L)));
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
     }
 
     @Test
@@ -263,7 +285,7 @@ class StudentServiceTest {
         when(studentRepository.existsByEmail("a@x.cl")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class,
-                () -> service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L)));
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
         verify(studentRepository, never()).save(any());
     }
 
@@ -272,7 +294,7 @@ class StudentServiceTest {
         when(careerRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(NotFoundException.class,
-                () -> service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L)));
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
         verify(studentRepository, never()).save(any());
     }
 
@@ -283,7 +305,7 @@ class StudentServiceTest {
         when(studyPlanRepository.findByCareerIdAndStatus(1L, StudyPlanStatus.CURRENT)).thenReturn(Optional.empty());
 
         assertThrows(IllegalStateException.class,
-                () -> service.saveStudent(new StudentCreateDTO("kc", "1-9", "Ana", "a@x.cl", 1L)));
+                () -> service.saveStudent(new StudentCreateDTO("Temp1234", "1-9", "Ana", "a@x.cl", 1L)));
         verify(studentRepository, never()).save(any());
     }
 

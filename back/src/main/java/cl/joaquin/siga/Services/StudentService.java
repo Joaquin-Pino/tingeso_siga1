@@ -32,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentService {
 
+    private final KeycloakAdminService keycloakAdminService;
     private final StudentRepository studentRepository;
     private final CareerRepository careerRepository;
     private final StudyPlanRepository studyPlanRepository;
@@ -104,7 +105,6 @@ public class StudentService {
         StudyPlan currentPlan = resolveCurrentStudyPlanOfActiveCareer(dto.careerId());
 
         Student student = new Student();
-        student.setKeycloakId(dto.keycloakId());
         student.setRun(dto.run());
         student.setFullName(dto.fullName());
         student.setEmail(dto.email());
@@ -112,8 +112,16 @@ public class StudentService {
         student.setStudyPlanId(currentPlan.getId());
         student.setStatus(StudentStatus.REGULAR); // estudiante queda guardado como regular
 
-        Student saved = studentRepository.save(student);
-        return toResponseDTO(saved);
+        // la cuenta de Keycloak se crea al final de las validaciones; su id (el sub del JWT) es el keycloakId
+        String keycloakId = keycloakAdminService.createUser(dto.email(), dto.fullName(), dto.temporaryPassword(), "STUDENT");
+        student.setKeycloakId(keycloakId);
+        try {
+            return toResponseDTO(studentRepository.save(student));
+        } catch (RuntimeException e) {
+            // si la BD rechaza al estudiante (ej. carrera concurrente) no se deja la cuenta huérfana
+            keycloakAdminService.deleteUser(keycloakId);
+            throw e;
+        }
     }
 
     private static StudentResponseDTO toResponseDTO(Student student) {

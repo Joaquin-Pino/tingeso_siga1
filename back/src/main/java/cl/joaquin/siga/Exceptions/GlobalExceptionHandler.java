@@ -40,6 +40,12 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    // Keycloak caído o mal configurado: falla del servicio externo, no del cliente
+    @ExceptionHandler(KeycloakException.class)
+    public ResponseEntity<Map<String, String>> handleKeycloak(KeycloakException ex) {
+        return error(HttpStatus.BAD_GATEWAY, ex.getMessage());
+    }
+
     // las constraints de BD son la defensa real contra carreras entre las réplicas del backend
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrity(DataIntegrityViolationException ex) {

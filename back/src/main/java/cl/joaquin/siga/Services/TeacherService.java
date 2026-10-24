@@ -22,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeacherService {
 
+    private final KeycloakAdminService keycloakAdminService;
     private final TeacherRepository teacherRepository;
     private final SectionRepository sectionRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
@@ -54,7 +55,6 @@ public class TeacherService {
         }
 
         Teacher teacher = new Teacher();
-        teacher.setKeycloakId(dto.keycloakId());
         teacher.setRun(dto.run());
         teacher.setFullName(dto.fullName());
         teacher.setEmail(dto.email());
@@ -62,7 +62,15 @@ public class TeacherService {
         teacher.setAcademicDegree(dto.academicDegree());
         teacher.setStatus(TeacherStatus.ACTIVE); // docente queda activo al registrarse
 
-        return toResponseDTO(teacherRepository.save(teacher));
+        // la cuenta de Keycloak se crea al final de las validaciones; su id (el sub del JWT) es el keycloakId
+        String keycloakId = keycloakAdminService.createUser(dto.email(), dto.fullName(), dto.temporaryPassword(), "TEACHER");
+        teacher.setKeycloakId(keycloakId);
+        try {
+            return toResponseDTO(teacherRepository.save(teacher));
+        } catch (RuntimeException e) {
+            keycloakAdminService.deleteUser(keycloakId);
+            throw e;
+        }
     }
 
     // el RUN no se modifica una vez registrado el docente

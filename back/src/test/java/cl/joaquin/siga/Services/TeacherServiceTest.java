@@ -14,6 +14,8 @@ import cl.joaquin.siga.Repositories.People.TeacherRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -32,6 +34,7 @@ class TeacherServiceTest {
     @Mock TeacherRepository teacherRepository;
     @Mock SectionRepository sectionRepository;
     @Mock AcademicPeriodRepository academicPeriodRepository;
+    @Mock KeycloakAdminService keycloakAdminService;
     @InjectMocks TeacherService service;
 
     private Teacher existingTeacher() {
@@ -53,7 +56,7 @@ class TeacherServiceTest {
     }
 
     private TeacherCreateDTO createDTO() {
-        return new TeacherCreateDTO("kc", "1-9", "Pedro", "p@x.cl", "Ingeniero", AcademicDegree.MASTER);
+        return new TeacherCreateDTO("Temp1234", "1-9", "Pedro", "p@x.cl", "Ingeniero", AcademicDegree.MASTER);
     }
 
     @Test
@@ -93,12 +96,25 @@ class TeacherServiceTest {
 
     @Test
     void saveTeacher_isActive() {
+        when(keycloakAdminService.createUser("p@x.cl", "Pedro", "Temp1234", "TEACHER")).thenReturn("kc-id");
         when(teacherRepository.save(any(Teacher.class))).thenAnswer(i -> i.getArgument(0));
 
         TeacherResponseDTO result = service.saveTeacher(createDTO());
 
         assertEquals(TeacherStatus.ACTIVE, result.status());
         assertEquals(AcademicDegree.MASTER, result.academicDegree());
+        ArgumentCaptor<Teacher> saved = ArgumentCaptor.forClass(Teacher.class);
+        verify(teacherRepository).save(saved.capture());
+        assertEquals("kc-id", saved.getValue().getKeycloakId());
+    }
+
+    @Test
+    void saveTeacher_dbFailure_deletesKeycloakAccount() {
+        when(keycloakAdminService.createUser("p@x.cl", "Pedro", "Temp1234", "TEACHER")).thenReturn("kc-id");
+        when(teacherRepository.save(any(Teacher.class))).thenThrow(new DataIntegrityViolationException("dup"));
+
+        assertThrows(DataIntegrityViolationException.class, () -> service.saveTeacher(createDTO()));
+        verify(keycloakAdminService).deleteUser("kc-id");
     }
 
     @Test
@@ -107,6 +123,7 @@ class TeacherServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.saveTeacher(createDTO()));
         verify(teacherRepository, never()).save(any());
+        verifyNoInteractions(keycloakAdminService);
     }
 
     @Test
