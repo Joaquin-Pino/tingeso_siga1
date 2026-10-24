@@ -15,9 +15,41 @@ services:
       timeout: 3s
       retries: 10
 
-  back:
-    build: ./back
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.5
     restart: unless-stopped
+    # start-dev: H2 en el volumen kcdata, sin HTTPS; suficiente para este proyecto
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_BOOTSTRAP_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD:?define KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD en .env}
+      # URL pública fija: el campo iss de los JWT siempre es esta, se pida el token desde donde se pida
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:?define KEYCLOAK_PUBLIC_URL en .env}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HEALTH_ENABLED: "true"
+      # sustituidos dentro de keycloak/siga-realm-realm.json al importar
+      KEYCLOAK_FRONT_URL: ${KEYCLOAK_FRONT_URL:?define KEYCLOAK_FRONT_URL en .env}
+      KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?define KEYCLOAK_ADMIN_CLIENT_SECRET en .env}
+      SIGA_ADMIN_PASSWORD: ${SIGA_ADMIN_PASSWORD:?define SIGA_ADMIN_PASSWORD en .env}
+      TZ: ${TZ:-America/Santiago}
+    volumes:
+      - ./keycloak/siga-realm-realm.json:/opt/keycloak/data/import/siga-realm-realm.json:ro,z
+      - kcdata:/opt/keycloak/data
+    ports:
+      - "9090:8080"
+    healthcheck:
+      # la imagen no trae curl: pide /health/ready al puerto de gestión (9000) con bash
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  back:
+    image: ${DOCKERHUB_USER:?define DOCKERHUB_USER en .env}/siga-back:${BACK_TAG:-latest}
+    restart: unless-stopped
+    deploy:
+      replicas: 3
     depends_on:
       db:
         condition: service_healthy
@@ -25,16 +57,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?}
-      SPRING_DOCKER_COMPOSE_ENABLED: "false"
-      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI:?define KEYCLOAK_ISSUER_URI en .env}
-      KEYCLOAK_BASE_URL: ${KEYCLOAK_BASE_URL:?define KEYCLOAK_BASE_URL en .env}
+      # issuer = URL pública (la que va en el JWT); las claves se piden por la red interna, sin salir a localhost
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_PUBLIC_URL:?}/realms/${KEYCLOAK_REALM:-siga-realm}
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM:-siga-realm}/protocol/openid-connect/certs
+      KEYCLOAK_BASE_URL: http://keycloak:8080
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-siga-realm}
       KEYCLOAK_ADMIN_CLIENT_ID: ${KEYCLOAK_ADMIN_CLIENT_ID:-siga-backend}
       KEYCLOAK_ADMIN_CLIENT_SECRET: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?define KEYCLOAK_ADMIN_CLIENT_SECRET en .env}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?define CORS_ALLOWED_ORIGINS en .env}
       TZ: ${TZ:-America/Santiago}
+    # provisorio hasta tener Nginx: un puerto del host por réplica (8081-8083)
     ports:
-      - "8080:8080"
+      - "8081-8083:8080"
 
 volumes:
   pgdata:
+  kcdata:

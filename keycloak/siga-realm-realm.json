@@ -1,0 +1,49 @@
+{
+  "realm": "siga-realm",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "ADMIN" },
+      { "name": "TEACHER" },
+      { "name": "STUDENT" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "siga-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["${KEYCLOAK_FRONT_URL}/*"],
+      "webOrigins": ["${KEYCLOAK_FRONT_URL}"]
+    },
+    {
+      "clientId": "siga-backend",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET}"
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-siga-backend",
+      "enabled": true,
+      "serviceAccountClientId": "siga-backend",
+      "clientRoles": {
+        "realm-management": ["manage-users", "view-users", "view-realm"]
+      }
+    },
+    {
+      "username": "admin1",
+      "enabled": true,
+      "email": "admin1@ipt.cl",
+      "emailVerified": true,
+      "firstName": "admin1",
+      "lastName": "Prueba",
+      "credentials": [{ "type": "password", "value": "${SIGA_ADMIN_PASSWORD}", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    }
+  ]
+}

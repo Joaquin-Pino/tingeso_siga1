@@ -7,7 +7,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 // Postgres en Docker para los tests que levantan el contexto de Spring. @ServiceConnection configura
-// el datasource automáticamente; la imagen es la misma que en compose.yaml y docker-compose.yml
+// el datasource automáticamente; la imagen es la misma que en docker-compose.yml
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
