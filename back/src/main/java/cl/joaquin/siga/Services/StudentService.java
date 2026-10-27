@@ -106,6 +106,13 @@ public class StudentService {
 
         Student student = new Student();
         student.setRun(dto.run());
+        // username = correo: si cambia, la cuenta de Keycloak se actualiza antes y se revierte si la BD falla
+        String previousEmail = student.getEmail();
+        boolean emailChanged = !dto.email().equals(previousEmail);
+        if (emailChanged && student.getKeycloakId() != null) {
+            keycloakAdminService.updateEmail(student.getKeycloakId(), dto.email());
+        }
+
         student.setFullName(dto.fullName());
         student.setEmail(dto.email());
         student.setCareerId(dto.careerId());
@@ -174,9 +181,23 @@ public class StudentService {
             throw new IllegalArgumentException("El correo ya está registrado: " + dto.email());
         }
 
+        // username = correo: si cambia, la cuenta de Keycloak se actualiza antes y se revierte si la BD falla
+        String previousEmail = student.getEmail();
+        boolean emailChanged = !dto.email().equals(previousEmail);
+        if (emailChanged && student.getKeycloakId() != null) {
+            keycloakAdminService.updateEmail(student.getKeycloakId(), dto.email());
+        }
+
         student.setFullName(dto.fullName());
         student.setEmail(dto.email());
-        return toResponseDTO(studentRepository.save(student));
+        try {
+            return toResponseDTO(studentRepository.save(student));
+        } catch (RuntimeException e) {
+            if (emailChanged && student.getKeycloakId() != null) {
+                keycloakAdminService.updateEmail(student.getKeycloakId(), previousEmail);
+            }
+            throw e;
+        }
     }
 
     public StudentResponseDTO updateStatus(Long studentId, StudentStatusUpdateDTO dto) {
@@ -268,6 +289,10 @@ public class StudentService {
         }
 
         studentRepository.delete(student);
+        // sin cuenta de Keycloak la persona ya no puede iniciar sesión
+        if (student.getKeycloakId() != null) {
+            keycloakAdminService.deleteUser(student.getKeycloakId());
+        }
     }
 
     // Solo debe invocarlos el proceso de cierre de período (épica 7); no exponer en un endpoint

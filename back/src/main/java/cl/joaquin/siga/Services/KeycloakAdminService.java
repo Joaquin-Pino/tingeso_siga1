@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-// Crea y borra las cuentas de Keycloak de estudiantes y docentes mediante la Admin API.
+// Crea, actualiza el correo y borra las cuentas de Keycloak de estudiantes y docentes mediante la Admin API.
 // El back usa un cliente confidencial con service account (siga-backend) con los roles
 // manage-users, view-users y view-realm de realm-management. La app no guarda contraseñas:
 // la temporal viaja a Keycloak y este obliga a cambiarla en el primer login.
@@ -84,6 +84,23 @@ public class KeycloakAdminService {
             throw e;
         }
         return userId;
+    }
+
+    // cambia el login (username = correo) y el correo de una cuenta existente
+    public void updateEmail(String userId, String email) {
+        try {
+            restClient.put()
+                    .uri("/admin/realms/{realm}/users/{id}", realm, userId)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + requestAdminToken())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("username", email, "email", email))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException.Conflict e) {
+            throw new IllegalArgumentException("Ya existe un usuario en Keycloak con el correo: " + email);
+        } catch (RestClientException e) {
+            throw new KeycloakException("No se pudo actualizar el correo en Keycloak", e);
+        }
     }
 
     // compensación: se usa cuando la BD rechaza al estudiante/docente después de crear su cuenta. No lanza

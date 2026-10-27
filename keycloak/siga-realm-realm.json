@@ -1,6 +1,7 @@
 {
   "realm": "siga-realm",
   "enabled": true,
+  "editUsernameAllowed": true,
   "roles": {
     "realm": [
       { "name": "ADMIN" },

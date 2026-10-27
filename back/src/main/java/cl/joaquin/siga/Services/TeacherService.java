@@ -82,11 +82,25 @@ public class TeacherService {
             throw new IllegalArgumentException("El correo ya está registrado: " + dto.email());
         }
 
+        // username = correo: si cambia, la cuenta de Keycloak se actualiza antes y se revierte si la BD falla
+        String previousEmail = teacher.getEmail();
+        boolean emailChanged = !dto.email().equals(previousEmail);
+        if (emailChanged && teacher.getKeycloakId() != null) {
+            keycloakAdminService.updateEmail(teacher.getKeycloakId(), dto.email());
+        }
+
         teacher.setFullName(dto.fullName());
         teacher.setEmail(dto.email());
         teacher.setProfessionalTitle(dto.professionalTitle());
         teacher.setAcademicDegree(dto.academicDegree());
-        return toResponseDTO(teacherRepository.save(teacher));
+        try {
+            return toResponseDTO(teacherRepository.save(teacher));
+        } catch (RuntimeException e) {
+            if (emailChanged && teacher.getKeycloakId() != null) {
+                keycloakAdminService.updateEmail(teacher.getKeycloakId(), previousEmail);
+            }
+            throw e;
+        }
     }
 
     // el cambio de estado solo toca el campo status: sus secciones (su historia) no se modifican
@@ -119,6 +133,10 @@ public class TeacherService {
         }
 
         teacherRepository.delete(teacher);
+        // sin cuenta de Keycloak la persona ya no puede iniciar sesión
+        if (teacher.getKeycloakId() != null) {
+            keycloakAdminService.deleteUser(teacher.getKeycloakId());
+        }
     }
 
     private Teacher findOrThrow(Long teacherId) {

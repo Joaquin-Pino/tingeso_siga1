@@ -9,7 +9,6 @@ import ErrorAlert from "../../components/ErrorAlert";
 import { getErrorMessage } from "../../utils/errors";
 import { formatBlocks } from "../../utils/schedule";
 
-const MIN_SECTIONS = 3;
 const MAX_SECTIONS = 6;
 
 const StudentRegistration = () => {
@@ -59,7 +58,8 @@ const StudentRegistration = () => {
     for (const b of s.scheduleBlocks) previewBlocks.push({ ...b, label: s.subject.code });
   }
 
-  const validCount = selected.length >= MIN_SECTIONS && selected.length <= MAX_SECTIONS;
+  // el mínimo (3, o las pendientes si quedan menos) lo valida el back, que cuenta lo ya inscrito + lo nuevo
+  const validCount = selected.length >= 1 && registeredSectionIds.size + selected.length <= MAX_SECTIONS;
 
   return (
     <div>
@@ -67,8 +67,8 @@ const StudentRegistration = () => {
       <ErrorAlert message={studentError || periodError || offeringError || error} onClose={() => setError("")} />
       {loaded && !period && <div className="alert alert-info">No hay un período abierto.</div>}
       <p className="text-muted">
-        Selecciona entre {MIN_SECTIONS} y {MAX_SECTIONS} asignaturas (si te quedan menos de {MIN_SECTIONS} para terminar el plan, las pendientes
-        disponibles). El sistema valida prerrequisitos, cupos, matrícula y choques de horario al confirmar.
+        Debes quedar con entre 3 y {MAX_SECTIONS} asignaturas inscritas en el período, contando las que ya tienes (si te quedan menos de 3
+        para terminar el plan, las pendientes disponibles). Llevas {registeredSectionIds.size}. El sistema valida prerrequisitos, cupos, matrícula y choques de horario al confirmar.
       </p>
 
       <table className="table table-striped align-middle">
