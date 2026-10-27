@@ -42,6 +42,7 @@ import cl.joaquin.siga.Services.StudyPlanService;
 import cl.joaquin.siga.Services.SubjectService;
 import cl.joaquin.siga.Services.TeacherService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,6 +61,7 @@ import static org.mockito.Mockito.when;
 
 // Lo que los tests con mocks no pueden probar: la unique de current_career_id, las unique constraints
 // (la defensa real entre réplicas) y el orden de flush que los Services necesitan para no violarlas
+@Tag("integration")
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 class PersistenceIntegrationTest {
