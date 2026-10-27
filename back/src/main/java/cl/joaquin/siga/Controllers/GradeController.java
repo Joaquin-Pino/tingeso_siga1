@@ -2,6 +2,7 @@ package cl.joaquin.siga.Controllers;
 
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.CourseRegistrationResponseDTO;
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.GradeUpdateDTO;
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.SectionRegistrationResponseDTO;
 import cl.joaquin.siga.Services.GradeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class GradeController {
 
     @GetMapping
     @PreAuthorize("@currentUser.isTeacher(#teacherId)")
-    public List<CourseRegistrationResponseDTO> getRegistrations(@PathVariable Long teacherId,
+    public List<SectionRegistrationResponseDTO> getRegistrations(@PathVariable Long teacherId,
                                                                 @PathVariable Long sectionId) {
         return gradeService.getSectionRegistrations(teacherId, sectionId);
     }

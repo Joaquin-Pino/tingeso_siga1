@@ -59,7 +59,7 @@ const TeacherSectionGrades = () => {
     gradeService
       .registerGrade(teacher.id, sectionId, registration.id, Number(grades[registration.id]))
       .then(() => {
-        setSaved(`Nota guardada (inscripción ${registration.id})`);
+        setSaved(`Nota guardada (${registration.studentFullName})`);
         loadRegistrations();
       })
       .catch(fail);
@@ -88,6 +88,7 @@ const TeacherSectionGrades = () => {
       <table className="table table-striped align-middle">
         <thead>
           <tr>
+            <th>RUN</th>
             <th>Estudiante</th>
             <th style={{ width: "160px" }}>Nota final</th>
             <th>Resultado</th>
@@ -97,7 +98,8 @@ const TeacherSectionGrades = () => {
         <tbody>
           {registrations.map((r) => (
             <tr key={r.id}>
-              <td>Estudiante {r.studentId}</td>
+              <td>{r.studentRun}</td>
+              <td>{r.studentFullName}</td>
               <td>
                 <input
                   type="number"

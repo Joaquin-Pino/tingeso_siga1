@@ -1,12 +1,15 @@
 package cl.joaquin.siga.Services;
 
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.CourseRegistrationResponseDTO;
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.SectionRegistrationResponseDTO;
+import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.GradeUpdateDTO;
 import cl.joaquin.siga.Entities.University.AcademicPeriod;
 import cl.joaquin.siga.Entities.University.CourseRegistration;
 import cl.joaquin.siga.Entities.University.PeriodStatus;
 import cl.joaquin.siga.Entities.University.Section;
 import cl.joaquin.siga.Exceptions.NotFoundException;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
@@ -36,6 +39,7 @@ class GradeServiceTest {
     @Mock CourseRegistrationRepository courseRegistrationRepository;
     @Mock SectionRepository sectionRepository;
     @Mock TeacherRepository teacherRepository;
+    @Mock StudentRepository studentRepository;
     @Mock AcademicPeriodRepository academicPeriodRepository;
     @InjectMocks GradeService service;
 
@@ -135,12 +139,19 @@ class GradeServiceTest {
 
     @Test
     void getSectionRegistrations_returnsEnrolled() {
+        Student student = new Student();
+        student.setId(3L);
+        student.setRun("12.345.678-9");
+        student.setFullName("Ana Pérez");
         when(courseRegistrationRepository.findBySectionId(SECTION_ID)).thenReturn(List.of(registration));
+        when(studentRepository.findAllById(List.of(3L))).thenReturn(List.of(student));
 
-        List<CourseRegistrationResponseDTO> result = service.getSectionRegistrations(TEACHER_ID, SECTION_ID);
+        List<SectionRegistrationResponseDTO> result = service.getSectionRegistrations(TEACHER_ID, SECTION_ID);
 
         assertEquals(1, result.size());
         assertEquals(3L, result.get(0).studentId());
+        assertEquals("12.345.678-9", result.get(0).studentRun());
+        assertEquals("Ana Pérez", result.get(0).studentFullName());
     }
 
     @Test

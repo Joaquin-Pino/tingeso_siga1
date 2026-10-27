@@ -1,6 +1,7 @@
 package cl.joaquin.siga.Controllers;
 
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.CourseRegistrationResponseDTO;
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.SectionRegistrationResponseDTO;
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.GradeUpdateDTO;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Services.GradeService;
@@ -38,11 +39,13 @@ class GradeControllerTest {
 
     @Test
     void getRegistrations_returns200() throws Exception {
-        when(gradeService.getSectionRegistrations(2L, 5L)).thenReturn(List.of(response(null)));
+        when(gradeService.getSectionRegistrations(2L, 5L)).thenReturn(List.of(
+                new SectionRegistrationResponseDTO(7L, 3L, "1-9", "Ana", null, null)));
 
         mockMvc.perform(get(BASE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].studentId").value(3));
+                .andExpect(jsonPath("$[0].studentId").value(3))
+                .andExpect(jsonPath("$[0].studentFullName").value("Ana"));
     }
 
     @Test
