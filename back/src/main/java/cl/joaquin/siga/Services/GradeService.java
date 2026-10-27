@@ -2,11 +2,14 @@ package cl.joaquin.siga.Services;
 
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.CourseRegistrationResponseDTO;
 import cl.joaquin.siga.DTOs.CourseRegistrationDTO.GradeUpdateDTO;
+import cl.joaquin.siga.DTOs.CourseRegistrationDTO.SectionRegistrationResponseDTO;
+import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.Entities.University.AcademicPeriod;
 import cl.joaquin.siga.Entities.University.CourseRegistration;
 import cl.joaquin.siga.Entities.University.PeriodStatus;
 import cl.joaquin.siga.Entities.University.Section;
 import cl.joaquin.siga.Exceptions.NotFoundException;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
@@ -16,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // registro de notas por el docente responsable de la sección
 @Service
@@ -26,14 +31,33 @@ public class GradeService {
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final SectionRepository sectionRepository;
     private final TeacherRepository teacherRepository;
+    private final StudentRepository studentRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
 
-    // los inscritos de una sección del docente
-    public List<CourseRegistrationResponseDTO> getSectionRegistrations(Long teacherId, Long sectionId) {
+    // los inscritos de una sección del docente, con el RUN y nombre de cada estudiante
+    public List<SectionRegistrationResponseDTO> getSectionRegistrations(Long teacherId, Long sectionId) {
         findOwnSection(teacherId, sectionId);
-        List<CourseRegistrationResponseDTO> result = new ArrayList<>();
-        for (CourseRegistration registration : courseRegistrationRepository.findBySectionId(sectionId)) {
-            result.add(CourseRegistrationService.toResponseDTO(registration));
+        List<CourseRegistration> registrations = courseRegistrationRepository.findBySectionId(sectionId);
+
+        List<Long> studentIds = new ArrayList<>();
+        for (CourseRegistration registration : registrations) {
+            studentIds.add(registration.getStudentId());
+        }
+        Map<Long, Student> students = new HashMap<>();
+        for (Student student : studentRepository.findAllById(studentIds)) {
+            students.put(student.getId(), student);
+        }
+
+        List<SectionRegistrationResponseDTO> result = new ArrayList<>();
+        for (CourseRegistration registration : registrations) {
+            Student student = students.get(registration.getStudentId());
+            result.add(new SectionRegistrationResponseDTO(
+                    registration.getId(),
+                    registration.getStudentId(),
+                    student.getRun(),
+                    student.getFullName(),
+                    registration.getGrade(),
+                    registration.getResult()));
         }
         return result;
     }

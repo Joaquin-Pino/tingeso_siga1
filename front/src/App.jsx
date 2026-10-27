@@ -20,6 +20,7 @@ import StudentRegistrations from "./pages/admin/StudentRegistrations";
 import TeacherSections from "./pages/teacher/TeacherSections";
 import TeacherSectionGrades from "./pages/teacher/TeacherSectionGrades";
 import StudentProfile from "./pages/student/StudentProfile";
+import StudentPlan from "./pages/student/StudentPlan";
 import StudentHistory from "./pages/student/StudentHistory";
 import StudentOffering from "./pages/student/StudentOffering";
 import StudentRegistration from "./pages/student/StudentRegistration";
@@ -72,6 +73,7 @@ function App() {
           <Route path="/my-sections/:sectionId" element={teacher(<TeacherSectionGrades />)} />
 
           <Route path="/my-profile" element={student(<StudentProfile />)} />
+          <Route path="/my-plan" element={student(<StudentPlan />)} />
           <Route path="/my-history" element={student(<StudentHistory />)} />
           <Route path="/offering" element={student(<StudentOffering />)} />
           <Route path="/registration" element={student(<StudentRegistration />)} />
