@@ -14,8 +14,11 @@ export const AuthProvider = ({ children }) => {
     // PKCE usa crypto.subtle, que el navegador solo da en contextos seguros (HTTPS o localhost).
     // En un despliegue por HTTP plano se desactiva.
     const pkceMethod = window.isSecureContext ? "S256" : false;
+    // El iframe de comprobación de cookies de terceros de Keycloak usa cookies Secure y por HTTP nunca
+    // responde (timeout). Sin él solo se pierde detectar el logout desde otra pestaña.
+    const checkLoginIframe = window.isSecureContext;
     keycloak
-      .init({ onLoad: "login-required", pkceMethod })
+      .init({ onLoad: "login-required", pkceMethod, checkLoginIframe })
       .then(() => setInitialized(true))
       .catch((error) => console.log("Error al iniciar Keycloak", error));
   }, []);
