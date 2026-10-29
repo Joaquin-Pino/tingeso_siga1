@@ -58,20 +58,20 @@ public class DemoDataService {
     }
 
     private static final List<TeacherSeed> TEACHERS = List.of(
-            new TeacherSeed("10.111.111-1", "Carolina Muñoz Soto", "carolina.munoz@ipt.cl",
+            new TeacherSeed("10.111.111-1", "Profesor 1", "profesor1@ipt.cl",
                     "Ingeniera Civil Informática", AcademicDegree.MASTER),
-            new TeacherSeed("10.222.222-2", "Andrés Fuentes Rojas", "andres.fuentes@ipt.cl",
+            new TeacherSeed("10.222.222-2", "Profesor 2", "profesor2@ipt.cl",
                     "Ingeniero en Computación", AcademicDegree.BACHELOR),
-            new TeacherSeed("10.333.333-3", "Valentina Araya Pérez", "valentina.araya@ipt.cl",
+            new TeacherSeed("10.333.333-3", "Profesor 3", "profesor3@ipt.cl",
                     "Ingeniera Civil en Informática", AcademicDegree.DOCTORATE),
-            new TeacherSeed("10.444.444-4", "Matías Contreras Vera", "matias.contreras@ipt.cl",
+            new TeacherSeed("10.444.444-4", "Profesor 4", "profesor4@ipt.cl",
                     "Ingeniero Civil en Telecomunicaciones", AcademicDegree.MASTER));
 
     private static final List<StudentSeed> STUDENTS = List.of(
-            new StudentSeed("20.111.111-1", "Sofía Herrera Díaz", "sofia.herrera@ipt.cl", "10450"),
-            new StudentSeed("20.222.222-2", "Diego Sandoval Mora", "diego.sandoval@ipt.cl", "10450"),
-            new StudentSeed("20.333.333-3", "Camila Reyes Lagos", "camila.reyes@ipt.cl", "10451"),
-            new StudentSeed("20.444.444-4", "Felipe Vargas Núñez", "felipe.vargas@ipt.cl", "10452"));
+            new StudentSeed("20.111.111-1", "Estudiante 1", "estudiante1@ipt.cl", "10450"),
+            new StudentSeed("20.222.222-2", "Estudiante 2", "estudiante2@ipt.cl", "10450"),
+            new StudentSeed("20.333.333-3", "Estudiante 3", "estudiante3@ipt.cl", "10451"),
+            new StudentSeed("20.444.444-4", "Estudiante 4", "estudiante4@ipt.cl", "10452"));
 
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;

@@ -230,6 +230,20 @@ class PersistenceIntegrationTest {
     }
 
     @Test
+    void uniqueConstraint_rejectsTwoOpenPeriods() {
+        // simula dos réplicas que pasan el existsByStatus a la vez: la BD es la que corta
+        academicPeriodService.createPeriod(new AcademicPeriodCreateDTO(2027, Semester.FIRST));
+
+        var second = new cl.joaquin.siga.Entities.University.AcademicPeriod();
+        second.setYear(2027);
+        second.setSemester(Semester.SECOND);
+        second.setStatus(cl.joaquin.siga.Entities.University.PeriodStatus.OPEN);
+        second.setOpenMarker(1);
+
+        assertThrows(DataIntegrityViolationException.class, () -> academicPeriodRepository.saveAndFlush(second));
+    }
+
+    @Test
     void deleteCareer_withStudyPlan_isRejected() {
         studyPlanService.createStudyPlan(new StudyPlanCreateDTO(careerId, "2026.1"));
 

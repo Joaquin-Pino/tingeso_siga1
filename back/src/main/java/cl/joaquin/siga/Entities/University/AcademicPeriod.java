@@ -10,9 +10,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "academic_period",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_academic_period_year_semester",
-                columnNames = {"year", "semester"}))
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_academic_period_year_semester", columnNames = {"year", "semester"}),
+                @UniqueConstraint(name = "uk_academic_period_open_marker", columnNames = {"open_marker"})
+        })
 public class AcademicPeriod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +29,9 @@ public class AcademicPeriod {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PeriodStatus status;
+
+    // 1 mientras el período es OPEN y null en otro caso. Postgres permite varios NULL en una unique, así que esto
+    // da "un solo período abierto a la vez" sin índice parcial (mismo truco que StudyPlan.currentCareerId)
+    @Column(name = "open_marker")
+    private Integer openMarker;
 }

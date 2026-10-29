@@ -65,7 +65,12 @@ class SectionCreationProcessIntegrationTest extends IntegrationTestBase {
 
     @Test
     void sameTeacherSameSlotInAnotherPeriod_isAllowed() throws Exception {
-        Long nextPeriod = period(2027, Semester.FIRST);
+        // el Service ya no deja un segundo período abierto, así que el siguiente se guarda directo
+        var next = new cl.joaquin.siga.Entities.University.AcademicPeriod();
+        next.setYear(2027);
+        next.setSemester(Semester.FIRST);
+        next.setStatus(cl.joaquin.siga.Entities.University.PeriodStatus.OPEN);
+        Long nextPeriod = academicPeriodRepository.save(next).getId();
         section(oneBlockSubject, periodId, teacherId, 30, block(cl.joaquin.siga.Entities.University.WeekDay.L, 1));
 
         mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)

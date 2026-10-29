@@ -9,6 +9,7 @@ import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.PeriodEnrollmentRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -77,6 +78,26 @@ class AcademicPeriodServiceTest {
 
         assertEquals(PeriodStatus.OPEN, result.status());
         assertEquals("2027-2", result.code());
+    }
+
+    @Test
+    void createPeriod_setsOpenMarker() {
+        when(academicPeriodRepository.save(any(AcademicPeriod.class))).thenAnswer(i -> i.getArgument(0));
+
+        service.createPeriod(new AcademicPeriodCreateDTO(2027, Semester.FIRST));
+
+        ArgumentCaptor<AcademicPeriod> saved = ArgumentCaptor.forClass(AcademicPeriod.class);
+        verify(academicPeriodRepository).save(saved.capture());
+        assertEquals(1, saved.getValue().getOpenMarker());
+    }
+
+    @Test
+    void createPeriod_anotherOpen_throws() {
+        when(academicPeriodRepository.existsByStatus(PeriodStatus.OPEN)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class,
+                () -> service.createPeriod(new AcademicPeriodCreateDTO(2027, Semester.SECOND)));
+        verify(academicPeriodRepository, never()).save(any());
     }
 
     @Test

@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AcademicPeriodRepository extends JpaRepository<AcademicPeriod, Long> {
     boolean existsByIdAndStatus(Long id, PeriodStatus status);
 
+    boolean existsByStatus(PeriodStatus status);
+
     boolean existsByYearAndSemester(Integer year, Semester semester);
 }

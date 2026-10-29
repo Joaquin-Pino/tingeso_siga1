@@ -69,6 +69,7 @@ public class PeriodCloseService {
 
         // 4. el período pasa a CLOSED
         period.setStatus(PeriodStatus.CLOSED);
+        period.setOpenMarker(null);
         academicPeriodRepository.save(period);
 
         AcademicPeriodResponseDTO periodDTO = new AcademicPeriodResponseDTO(
