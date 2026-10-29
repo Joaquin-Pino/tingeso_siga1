@@ -1,6 +1,7 @@
 {
   "realm": "siga-realm",
   "enabled": true,
+  "sslRequired": "none",
   "editUsernameAllowed": true,
   "roles": {
     "realm": [

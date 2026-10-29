@@ -11,8 +11,11 @@ export const AuthProvider = ({ children }) => {
     // StrictMode ejecuta los efectos dos veces; keycloak.init solo puede llamarse una vez.
     if (started.current) return;
     started.current = true;
+    // PKCE usa crypto.subtle, que el navegador solo da en contextos seguros (HTTPS o localhost).
+    // En un despliegue por HTTP plano se desactiva.
+    const pkceMethod = window.isSecureContext ? "S256" : false;
     keycloak
-      .init({ onLoad: "login-required", pkceMethod: "S256" })
+      .init({ onLoad: "login-required", pkceMethod })
       .then(() => setInitialized(true))
       .catch((error) => console.log("Error al iniciar Keycloak", error));
   }, []);
