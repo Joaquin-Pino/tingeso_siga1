@@ -60,6 +60,15 @@ class CareerServiceTest {
     }
 
     @Test
+    void createCareer_zeroVacancies_ok() {
+        when(careerRepository.save(any(Career.class))).thenAnswer(i -> i.getArgument(0));
+
+        CareerResponseDTO result = service.createCareer(new CareerCreateDTO("INF", "Informática", "desc", 1, 0));
+
+        assertEquals(0, result.vacancies());
+    }
+
+    @Test
     void createCareer_duplicateCode_throws() {
         when(careerRepository.existsByCode("INF")).thenReturn(true);
 

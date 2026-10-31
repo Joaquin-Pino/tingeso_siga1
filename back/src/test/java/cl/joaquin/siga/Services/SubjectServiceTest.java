@@ -177,6 +177,33 @@ class SubjectServiceTest {
     }
 
     @Test
+    void updateSubject_moreThanThreePrerequisites_throws() {
+        when(subjectRepository.findById(20L)).thenReturn(Optional.of(subject(20L, 1L, "TAP302", 4)));
+
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L, updateDTO(4, Set.of(1L, 2L, 3L, 4L))));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void createSubject_semesterAndCreditsLimits_ok() {
+        planExistsAndCodeFree();
+        when(subjectRepository.save(any(Subject.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 1, 2, 2, 0, 1, null)));
+        assertDoesNotThrow(() -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 4, 2, 2, 0, 7, null)));
+    }
+
+    @Test
+    void createSubject_zeroHours_ok() {
+        planExistsAndCodeFree();
+        when(subjectRepository.save(any(Subject.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> service.createSubject(createDTO(1, 0, 0, 0, null)));
+    }
+
+    @Test
     void createSubject_prerequisiteNotFound_throws() {
         planExistsAndCodeFree();
         when(subjectRepository.findById(10L)).thenReturn(Optional.empty());

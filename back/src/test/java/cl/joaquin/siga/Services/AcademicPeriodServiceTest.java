@@ -88,6 +88,13 @@ class AcademicPeriodServiceTest {
     }
 
     @Test
+    void createPeriod_negativeYear_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createPeriod(new AcademicPeriodCreateDTO(-2026, Semester.FIRST)));
+        verify(academicPeriodRepository, never()).save(any());
+    }
+
+    @Test
     void createPeriod_setsOpenMarker() {
         when(academicPeriodRepository.save(any(AcademicPeriod.class))).thenAnswer(i -> i.getArgument(0));
 

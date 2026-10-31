@@ -395,6 +395,44 @@ class SectionServiceTest {
     }
 
     @Test
+    void createSection_capacityBelowOne_throws() {
+        when(academicPeriodRepository.findById(10L)).thenReturn(Optional.of(period(PeriodStatus.OPEN)));
+        when(subjectRepository.findById(5L)).thenReturn(Optional.of(subject(2, 2, 0)));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createSection(new SectionCreateDTO(5L, 10L, 7L, 0, THREE_BLOCKS)));
+        verify(sectionRepository, never()).save(any());
+    }
+
+    @Test
+    void updateSection_capacityBelowOne_throws() {
+        stubUpdatableSection(section(1L, 7L, 30, 0));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateSection(1L, new SectionUpdateDTO(7L, 0, THREE_BLOCKS)));
+        verify(sectionRepository, never()).save(any());
+    }
+
+    @Test
+    void updateSection_moduleOutOfRange_throws() {
+        stubUpdatableSection(section(1L, 7L, 30, 0));
+        when(subjectRepository.findById(5L)).thenReturn(Optional.of(subject(2, 0, 0)));
+
+        assertThrows(IllegalArgumentException.class, () -> service.updateSection(1L,
+                new SectionUpdateDTO(7L, 30, List.of(new ScheduleBlockDTO(WeekDay.L, 7)))));
+        verify(sectionRepository, never()).save(any());
+    }
+
+    @Test
+    void createSection_moduleLimits_ok() {
+        stubValidCreate(subject(2, 2, 0));
+        when(sectionRepository.save(any(Section.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> service.createSection(createDTO(
+                List.of(new ScheduleBlockDTO(WeekDay.L, 1), new ScheduleBlockDTO(WeekDay.L, 6)))));
+    }
+
+    @Test
     void updateSection_capacityBelowEnrolled_throws() {
         stubUpdatableSection(section(1L, 7L, 30, 20));
 
