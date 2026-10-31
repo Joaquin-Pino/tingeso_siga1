@@ -68,22 +68,14 @@ class SectionControllerTest {
 
     @Test
     void create_capacityOver60_returns400() throws Exception {
+        // el tope de 60 lo valida SectionService (IllegalArgumentException -> 400)
+        when(sectionService.createSection(any())).thenThrow(new IllegalArgumentException("capacidad"));
+
         mockMvc.perform(post("/api/sections").contentType(MediaType.APPLICATION_JSON).content("""
                         {"subjectId": 5, "academicPeriodId": 10, "teacherId": 7, "capacity": 61,
                          "scheduleBlocks": [{"day": "L", "module": 1}]}
                         """))
                 .andExpect(status().isBadRequest());
-        verify(sectionService, never()).createSection(any());
-    }
-
-    @Test
-    void create_moduleOutOfRange_returns400() throws Exception {
-        mockMvc.perform(post("/api/sections").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"subjectId": 5, "academicPeriodId": 10, "teacherId": 7, "capacity": 30,
-                         "scheduleBlocks": [{"day": "L", "module": 7}]}
-                        """))
-                .andExpect(status().isBadRequest());
-        verify(sectionService, never()).createSection(any());
     }
 
     @Test

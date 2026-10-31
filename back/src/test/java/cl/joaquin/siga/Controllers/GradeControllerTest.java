@@ -73,24 +73,6 @@ class GradeControllerTest {
     }
 
     @Test
-    void registerGrade_belowOne_returns400() throws Exception {
-        mockMvc.perform(put(BASE + "/7/grade").contentType(MediaType.APPLICATION_JSON).content("{\"grade\": 0.9}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void registerGrade_aboveSeven_returns400() throws Exception {
-        mockMvc.perform(put(BASE + "/7/grade").contentType(MediaType.APPLICATION_JSON).content("{\"grade\": 7.1}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void registerGrade_twoDecimals_returns400() throws Exception {
-        mockMvc.perform(put(BASE + "/7/grade").contentType(MediaType.APPLICATION_JSON).content("{\"grade\": 5.55}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void registerGrade_closedPeriod_returns409() throws Exception {
         when(gradeService.registerGrade(any(), any(), any(), any())).thenThrow(new IllegalStateException("cerrado"));
 

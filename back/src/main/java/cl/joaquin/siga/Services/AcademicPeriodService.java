@@ -35,6 +35,9 @@ public class AcademicPeriodService {
     }
 
     public AcademicPeriodResponseDTO createPeriod(AcademicPeriodCreateDTO dto) {
+        if (dto.year() <= 0) {
+            throw new IllegalArgumentException("El año del período debe ser positivo");
+        }
         if (academicPeriodRepository.existsByYearAndSemester(dto.year(), dto.semester())) {
             throw new IllegalArgumentException(
                     "Ya existe el período " + dto.year() + "-" + dto.semester().getNumber());

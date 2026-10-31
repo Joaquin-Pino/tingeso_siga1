@@ -127,6 +127,30 @@ class SubjectServiceTest {
     }
 
     @Test
+    void createSubject_semesterOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(createDTO(0, 2, 2, 0, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(createDTO(5, 2, 2, 0, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void createSubject_creditsOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 3, 2, 2, 0, 0, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 3, 2, 2, 0, 8, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void updateSubject_semesterOrCreditsOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L, updateDTO(5, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L,
+                new SubjectUpdateDTO("TAP302", "x", 3, 2, 2, 0, 8, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
     void createSubject_negativeHours_throws() {
         planExistsAndCodeFree();
 

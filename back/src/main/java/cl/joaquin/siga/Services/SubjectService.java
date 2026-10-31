@@ -27,6 +27,10 @@ import java.util.Set;
 public class SubjectService {
     private static final int MAX_PREREQUISITES = 3;
     private static final int MAX_WEEKLY_HOURS_EXCLUSIVE = 8;
+    private static final int MIN_SEMESTER = 1;
+    private static final int MAX_SEMESTER = 4;
+    private static final int MIN_CREDITS = 1;
+    private static final int MAX_CREDITS = 7;
 
     private final SubjectRepository subjectRepository;
     private final SubjectPrerequisiteRepository subjectPrerequisiteRepository;
@@ -55,6 +59,7 @@ public class SubjectService {
 
     @Transactional
     public SubjectResponseDTO createSubject(SubjectCreateDTO dto) {
+        validateSemesterAndCredits(dto.semester(), dto.credits());
         if (!studyPlanRepository.existsById(dto.studyPlanId())) {
             throw new NotFoundException("Plan de estudios no encontrado: " + dto.studyPlanId());
         }
@@ -89,6 +94,7 @@ public class SubjectService {
     // El historial académico guarda un snapshot de la asignatura, así que editarla no lo altera
     @Transactional
     public SubjectResponseDTO updateSubject(Long subjectId, SubjectUpdateDTO dto) {
+        validateSemesterAndCredits(dto.semester(), dto.credits());
         Subject subject = findSubject(subjectId);
 
         // el código debe seguir siendo único dentro del plan
@@ -143,6 +149,16 @@ public class SubjectService {
     private Subject findSubject(Long subjectId) {
         return subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new NotFoundException("Asignatura no encontrada: " + subjectId));
+    }
+
+    private static void validateSemesterAndCredits(int semester, int credits) {
+        if (semester < MIN_SEMESTER || semester > MAX_SEMESTER) {
+            throw new IllegalArgumentException(
+                    "El semestre debe estar entre " + MIN_SEMESTER + " y " + MAX_SEMESTER);
+        }
+        if (credits < MIN_CREDITS || credits > MAX_CREDITS) {
+            throw new IllegalArgumentException("Los SCT deben estar entre " + MIN_CREDITS + " y " + MAX_CREDITS);
+        }
     }
 
     private static void validateWeeklyHours(int theory, int exercise, int lab) {
