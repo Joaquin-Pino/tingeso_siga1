@@ -1,15 +1,18 @@
 package cl.joaquin.siga.Services;
 
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherCreateDTO;
+import cl.joaquin.siga.DTOs.TeachingRecordDTO.TeachingRecordResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherUpdateDTO;
 import cl.joaquin.siga.Entities.People.Teacher;
 import cl.joaquin.siga.Entities.People.TeacherStatus;
+import cl.joaquin.siga.Entities.People.TeachingRecord;
 import cl.joaquin.siga.Entities.University.PeriodStatus;
 import cl.joaquin.siga.Entities.University.Section;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
+import cl.joaquin.siga.Repositories.People.TeachingRecordRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ public class TeacherService {
     private final TeacherRepository teacherRepository;
     private final SectionRepository sectionRepository;
     private final AcademicPeriodRepository academicPeriodRepository;
+    private final TeachingRecordRepository teachingRecordRepository;
 
     public List<TeacherResponseDTO> getAll() {
         List<TeacherResponseDTO> result = new ArrayList<>();
@@ -44,6 +48,27 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new NotFoundException("No hay un docente asociado a la cuenta autenticada"));
         return toResponseDTO(teacher);
+    }
+
+    // historial docente: secciones de períodos ya cerrados, tal como se impartieron
+    public List<TeachingRecordResponseDTO> getTeachingHistory(Long teacherId) {
+        findOrThrow(teacherId);
+
+        List<TeachingRecordResponseDTO> result = new ArrayList<>();
+        for (TeachingRecord record : teachingRecordRepository.findByTeacherId(teacherId)) {
+            result.add(new TeachingRecordResponseDTO(
+                    record.getId(),
+                    record.getSectionId(),
+                    record.getSubjectId(),
+                    record.getAcademicPeriodId(),
+                    record.getSubjectCode(),
+                    record.getSubjectName(),
+                    record.getSubjectSemester(),
+                    record.getPeriodCode(),
+                    record.getEnrolledCount()
+            ));
+        }
+        return result;
     }
 
     public TeacherResponseDTO saveTeacher(TeacherCreateDTO dto) {

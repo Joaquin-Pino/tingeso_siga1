@@ -184,6 +184,17 @@ class SecurityConfigTest {
     }
 
     @Test
+    void teacher_readsOwnTeachingHistory_butNotOthers() throws Exception {
+        when(currentUser.isTeacher(2L)).thenReturn(true);
+        when(currentUser.isTeacher(3L)).thenReturn(false);
+
+        mockMvc.perform(get("/api/teachers/2/teaching-history").with(as("TEACHER"))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/teachers/3/teaching-history").with(as("TEACHER"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/teachers/3/teaching-history").with(as("ADMIN"))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/teachers/2/teaching-history").with(as("STUDENT"))).andExpect(status().isForbidden());
+    }
+
+    @Test
     void teacher_gradesOnlyOwnSections() throws Exception {
         when(currentUser.isTeacher(2L)).thenReturn(true);
         when(currentUser.isTeacher(3L)).thenReturn(false);

@@ -5,6 +5,7 @@ import cl.joaquin.siga.DTOs.AcademicPeriodDTO.PeriodCloseResponseDTO;
 import cl.joaquin.siga.Entities.People.AcademicRecord;
 import cl.joaquin.siga.Entities.People.Student;
 import cl.joaquin.siga.Entities.People.StudentStatus;
+import cl.joaquin.siga.Entities.People.TeachingRecord;
 import cl.joaquin.siga.Entities.University.AcademicPeriod;
 import cl.joaquin.siga.Entities.University.CourseRegistration;
 import cl.joaquin.siga.Entities.University.CourseResult;
@@ -14,6 +15,7 @@ import cl.joaquin.siga.Entities.University.Subject;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
 import cl.joaquin.siga.Repositories.People.StudentRepository;
+import cl.joaquin.siga.Repositories.People.TeachingRecordRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
@@ -46,6 +48,7 @@ public class PeriodCloseService {
     private final SectionRepository sectionRepository;
     private final SubjectRepository subjectRepository;
     private final StudentRepository studentRepository;
+    private final TeachingRecordRepository teachingRecordRepository;
 
     @Transactional
     public PeriodCloseResponseDTO closePeriod(Long periodId) {
@@ -67,7 +70,10 @@ public class PeriodCloseService {
         List<Long> eliminated = new ArrayList<>();
         updateStudentStatuses(registrations, graduated, eliminated);
 
-        // 4. el período pasa a CLOSED
+        // 4. historial docente: una fila por sección del período
+        createTeachingRecords(period);
+
+        // 5. el período pasa a CLOSED
         period.setStatus(PeriodStatus.CLOSED);
         period.setOpenMarker(null);
         academicPeriodRepository.save(period);
@@ -154,6 +160,44 @@ public class PeriodCloseService {
             created++;
         }
         return created;
+    }
+
+    // snapshot de cada sección dictada en el período, para que cambios posteriores del docente (estado, etc.)
+    // o de la asignatura no alteren lo que ya impartió. Idempotente: una fila por sección
+    private void createTeachingRecords(AcademicPeriod period) {
+        Set<Long> alreadyRecorded = new HashSet<>();
+        for (TeachingRecord record : teachingRecordRepository.findByAcademicPeriodId(period.getId())) {
+            alreadyRecorded.add(record.getSectionId());
+        }
+
+        List<Section> sections = sectionRepository.findByAcademicPeriodId(period.getId());
+        Set<Long> subjectIds = new HashSet<>();
+        for (Section section : sections) {
+            subjectIds.add(section.getSubjectId());
+        }
+        Map<Long, Subject> subjects = new HashMap<>();
+        for (Subject subject : subjectRepository.findAllById(subjectIds)) {
+            subjects.put(subject.getId(), subject);
+        }
+
+        String periodCode = AcademicPeriodService.periodCode(period);
+        for (Section section : sections) {
+            if (alreadyRecorded.contains(section.getId())) {
+                continue;
+            }
+            Subject subject = subjects.get(section.getSubjectId());
+            TeachingRecord record = new TeachingRecord();
+            record.setTeacherId(section.getTeacherId());
+            record.setSectionId(section.getId());
+            record.setSubjectId(subject.getId());
+            record.setAcademicPeriodId(period.getId());
+            record.setSubjectCode(subject.getCode());
+            record.setSubjectName(subject.getName());
+            record.setSubjectSemester(subject.getSemester());
+            record.setPeriodCode(periodCode);
+            record.setEnrolledCount(section.getEnrolledCount());
+            teachingRecordRepository.save(record);
+        }
     }
 
     // ELIMINATED: reprobó la misma asignatura por segunda vez. GRADUATED: aprobó todas las del plan

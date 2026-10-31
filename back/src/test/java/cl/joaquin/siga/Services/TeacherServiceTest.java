@@ -11,6 +11,9 @@ import cl.joaquin.siga.Entities.University.PeriodStatus;
 import cl.joaquin.siga.Entities.University.Section;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
+import cl.joaquin.siga.Repositories.People.TeachingRecordRepository;
+import cl.joaquin.siga.Entities.People.TeachingRecord;
+import cl.joaquin.siga.DTOs.TeachingRecordDTO.TeachingRecordResponseDTO;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,7 @@ class TeacherServiceTest {
     @Mock SectionRepository sectionRepository;
     @Mock AcademicPeriodRepository academicPeriodRepository;
     @Mock KeycloakAdminService keycloakAdminService;
+    @Mock TeachingRecordRepository teachingRecordRepository;
     @InjectMocks TeacherService service;
 
     private Teacher existingTeacher() {
@@ -53,6 +57,34 @@ class TeacherServiceTest {
         Section section = new Section();
         section.setAcademicPeriodId(periodId);
         return section;
+    }
+
+    @Test
+    void getTeachingHistory_returnsSnapshotsEvenIfTeacherIsInactive() {
+        Teacher teacher = existingTeacher();
+        teacher.setStatus(TeacherStatus.INACTIVE);
+        when(teacherRepository.findById(1L)).thenReturn(Optional.of(teacher));
+        TeachingRecord record = new TeachingRecord();
+        record.setId(4L);
+        record.setSectionId(9L);
+        record.setSubjectCode("TAP101");
+        record.setPeriodCode("2026-2");
+        record.setEnrolledCount(20);
+        when(teachingRecordRepository.findByTeacherId(1L)).thenReturn(List.of(record));
+
+        List<TeachingRecordResponseDTO> history = service.getTeachingHistory(1L);
+
+        assertEquals(1, history.size());
+        assertEquals("TAP101", history.get(0).subjectCode());
+        assertEquals("2026-2", history.get(0).periodCode());
+        assertEquals(20, history.get(0).enrolledCount());
+    }
+
+    @Test
+    void getTeachingHistory_teacherNotFound_throws() {
+        when(teacherRepository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.getTeachingHistory(9L));
     }
 
     private TeacherCreateDTO createDTO() {

@@ -2,6 +2,7 @@ package cl.joaquin.siga.Controllers;
 
 import cl.joaquin.siga.DTOs.SectionDTO.SectionResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherCreateDTO;
+import cl.joaquin.siga.DTOs.TeachingRecordDTO.TeachingRecordResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherResponseDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherStatusUpdateDTO;
 import cl.joaquin.siga.DTOs.TeacherDTO.TeacherUpdateDTO;
@@ -44,6 +45,12 @@ public class TeacherController {
     @PreAuthorize("hasRole('ADMIN') or @currentUser.isTeacher(#id)")
     public List<SectionResponseDTO> getSections(@PathVariable Long id) {
         return sectionService.getAllTeacherSections(id);
+    }
+
+    @GetMapping("/{id}/teaching-history")
+    @PreAuthorize("hasRole('ADMIN') or @currentUser.isTeacher(#id)")
+    public List<TeachingRecordResponseDTO> getTeachingHistory(@PathVariable Long id) {
+        return teacherService.getTeachingHistory(id);
     }
 
     @PostMapping
