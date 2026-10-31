@@ -8,6 +8,7 @@ export const NAV_ITEMS = [
   { to: "/study-plans", label: "Planes de estudio", description: "Crear planes de estudio", roles: ["ADMIN"] },
   { to: "/subjects/new", label: "Nueva asignatura", description: "Crear una asignatura en un plan de estudios", roles: ["ADMIN"] },
   { to: "/my-sections", label: "Mis secciones", description: "Secciones a cargo y registro de notas", roles: ["TEACHER"] },
+  { to: "/my-teaching-history", label: "Mi historial docente", description: "Secciones impartidas en períodos cerrados", roles: ["TEACHER"] },
   { to: "/my-profile", label: "Mi perfil", description: "Datos, plan de estudios y promedio", roles: ["STUDENT"] },
   { to: "/my-plan", label: "Mi plan", description: "Asignaturas del plan por semestre, prerrequisitos y avance", roles: ["STUDENT"] },
   { to: "/my-history", label: "Mi historial", description: "Asignaturas cursadas, notas y resultados", roles: ["STUDENT"] },
