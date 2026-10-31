@@ -8,6 +8,7 @@ import cl.joaquin.siga.Entities.University.SubjectPrerequisite;
 import cl.joaquin.siga.Entities.University.WeeklyHours;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
@@ -37,6 +38,7 @@ class SubjectServiceTest {
     @Mock AcademicRecordRepository academicRecordRepository;
     @Mock CourseRegistrationRepository courseRegistrationRepository;
     @Mock SectionRepository sectionRepository;
+    @Mock StudentRepository studentRepository;
     @InjectMocks SubjectService service;
 
     private static Subject subject(Long id, Long studyPlanId, String code, int semester) {
@@ -96,6 +98,15 @@ class SubjectServiceTest {
         when(subjectRepository.existsByStudyPlanIdAndCode(1L, "TAP302")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> service.createSubject(createDTO(1, 2, 2, 0, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void createSubject_planHasStudents_throws() {
+        planExistsAndCodeFree();
+        when(studentRepository.existsByStudyPlanId(1L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> service.createSubject(createDTO(1, 2, 2, 0, null)));
         verify(subjectRepository, never()).save(any());
     }
 

@@ -8,6 +8,7 @@ import cl.joaquin.siga.Entities.University.SubjectPrerequisite;
 import cl.joaquin.siga.Entities.University.WeeklyHours;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
@@ -33,6 +34,7 @@ public class SubjectService {
     private final AcademicRecordRepository academicRecordRepository;
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final SectionRepository sectionRepository;
+    private final StudentRepository studentRepository;
 
     public SubjectResponseDTO getById(Long subjectId) {
         Subject subject = findSubject(subjectId);
@@ -60,6 +62,13 @@ public class SubjectService {
             throw new IllegalArgumentException(
                     "Ya existe una asignatura con el código " + dto.code() + " en el plan: " + dto.studyPlanId());
         }
+
+        // si hay estudiantes con este plan, no se le pueden agregar más asignaturas
+        if (studentRepository.existsByStudyPlanId(dto.studyPlanId())) {
+            throw new IllegalStateException(
+                    "No se pueden agregar asignaturas: hay estudiantes inscritos en el plan: " + dto.studyPlanId());
+        }
+
         validateWeeklyHours(dto.theoryHours(), dto.exerciseHours(), dto.labHours());
         Set<Long> prerequisiteIds = nullToEmpty(dto.prerequisiteIds());
         validatePrerequisites(null, dto.studyPlanId(), dto.semester(), prerequisiteIds);
