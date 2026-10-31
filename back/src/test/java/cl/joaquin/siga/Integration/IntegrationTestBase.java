@@ -15,6 +15,7 @@ import cl.joaquin.siga.Entities.University.WeekDay;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
 import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.People.TeacherRepository;
+import cl.joaquin.siga.Repositories.People.TeachingRecordRepository;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CareerRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
@@ -86,6 +87,7 @@ public abstract class IntegrationTestBase {
     @Autowired protected SectionScheduleBlockRepository sectionScheduleBlockRepository;
     @Autowired protected CourseRegistrationRepository courseRegistrationRepository;
     @Autowired protected AcademicRecordRepository academicRecordRepository;
+    @Autowired protected TeachingRecordRepository teachingRecordRepository;
 
     protected Long careerId;
     protected Long planId;
@@ -96,6 +98,7 @@ public abstract class IntegrationTestBase {
         when(keycloakAdminService.createUser(anyString(), anyString(), anyString(), anyString()))
                 .thenAnswer(invocation -> UUID.randomUUID().toString());
         academicRecordRepository.deleteAll();
+        teachingRecordRepository.deleteAll();
         courseRegistrationRepository.deleteAll();
         periodEnrollmentRepository.deleteAll();
         sectionScheduleBlockRepository.deleteAll();

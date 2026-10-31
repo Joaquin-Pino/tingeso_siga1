@@ -15,6 +15,8 @@ import static cl.joaquin.siga.Entities.University.WeekDay.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -108,6 +110,78 @@ class GradingAndPeriodCloseProcessIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isBadRequest());
 
         assertNull(registrationOf(sectionId1).getGrade());
+    }
+
+    @Test
+    void gradeBelowOneOrWithTwoDecimals_isRejectedWith400() throws Exception {
+        for (String invalid : new String[]{"0.9", "5.55"}) {
+            mockMvc.perform(put("/api/teachers/{t}/sections/{s}/registrations/{r}/grade", teacherId, sectionId1, registrationId1)
+                            .with(asTeacher(teacherId)).contentType(APPLICATION_JSON)
+                            .content("{\"grade\": " + invalid + "}"))
+                    .andExpect(status().isBadRequest());
+        }
+
+        assertNull(registrationOf(sectionId1).getGrade());
+    }
+
+    @Test
+    void gradeLimits_areAccepted() throws Exception {
+        grade(sectionId1, registrationId1, "1.0");
+        grade(sectionId1, registrationId1, "7.0");
+    }
+
+    // ---- historial docente ----
+
+    private void gradeAllAndClose() throws Exception {
+        grade(sectionId1, registrationId1, "5.5");
+        grade(sectionId2, registrationId2, "3.0");
+        grade(sectionId3, registrationId3, "4.0");
+        mockMvc.perform(post("/api/academic-periods/{id}/close", periodId).with(admin())).andExpect(status().isOk());
+    }
+
+    @Test
+    void teachingHistory_isEmptyWhilePeriodIsOpen() throws Exception {
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(asTeacher(teacherId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void closePeriod_recordsEverySectionOfTheTeacher() throws Exception {
+        gradeAllAndClose();
+
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(asTeacher(teacherId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].periodCode").value("2026-2"))
+                .andExpect(jsonPath("$[0].enrolledCount").value(1));
+        assertEquals(3, teachingRecordRepository.findByTeacherId(teacherId).size());
+    }
+
+    @Test
+    void teachingHistory_survivesTeacherBeingDeactivated() throws Exception {
+        gradeAllAndClose();
+
+        mockMvc.perform(patch("/api/teachers/{id}/status", teacherId).with(admin()).contentType(APPLICATION_JSON)
+                        .content("{\"status\": \"INACTIVE\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    @Test
+    void teachingHistory_otherTeacherIsForbidden_adminIsAllowed() throws Exception {
+        gradeAllAndClose();
+        Long otherTeacher = teacher();
+
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(asTeacher(otherTeacher)))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(admin()))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/teachers/{id}/teaching-history", teacherId).with(asStudent(studentId)))
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -105,6 +105,36 @@ class SectionCreationProcessIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    void capacityOutOfRange_isRejectedWith400() throws Exception {
+        for (int capacity : new int[]{61, 0}) {
+            mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                            .content(body(oneBlockSubject, periodId, teacherId, capacity, blockJson("L", 1))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        assertEquals(0, sectionRepository.count());
+    }
+
+    @Test
+    void capacity60_isAccepted() throws Exception {
+        mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                        .content(body(oneBlockSubject, periodId, teacherId, 60, blockJson("L", 1))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.capacity").value(60));
+    }
+
+    @Test
+    void moduleOutOfRange_isRejectedWith400() throws Exception {
+        for (int module : new int[]{0, 7}) {
+            mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                            .content(body(oneBlockSubject, periodId, teacherId, 30, blockJson("L", module))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        assertEquals(0, sectionRepository.count());
+    }
+
+    @Test
     void closedPeriod_isRejected() throws Exception {
         AcademicPeriod period = academicPeriodRepository.findById(periodId).orElseThrow();
         period.setStatus(PeriodStatus.CLOSED);
