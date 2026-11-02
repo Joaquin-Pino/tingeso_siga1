@@ -56,6 +56,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # los datos de demo crean las cuentas en Keycloak al arrancar: tiene que estar listo antes
+      keycloak:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?}
