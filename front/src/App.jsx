@@ -18,6 +18,8 @@ import PeriodEnrollments from "./pages/admin/PeriodEnrollments";
 import SectionForm from "./pages/admin/SectionForm";
 import StudentRegistrations from "./pages/admin/StudentRegistrations";
 import TeacherSections from "./pages/teacher/TeacherSections";
+import TeacherTeachingHistory from "./pages/teacher/TeacherTeachingHistory";
+import TeacherHistory from "./pages/admin/TeacherHistory";
 import TeacherSectionGrades from "./pages/teacher/TeacherSectionGrades";
 import StudentProfile from "./pages/student/StudentProfile";
 import StudentPlan from "./pages/student/StudentPlan";
@@ -49,6 +51,7 @@ function App() {
 
           <Route path="/teachers" element={admin(<TeacherList />)} />
           <Route path="/teachers/new" element={admin(<TeacherForm />)} />
+          <Route path="/teachers/:id/history" element={admin(<TeacherHistory />)} />
           <Route path="/teachers/:id/edit" element={admin(<TeacherForm />)} />
 
           <Route path="/careers" element={admin(<CareerList />)} />
@@ -70,6 +73,7 @@ function App() {
 
 
           <Route path="/my-sections" element={teacher(<TeacherSections />)} />
+          <Route path="/my-teaching-history" element={teacher(<TeacherTeachingHistory />)} />
           <Route path="/my-sections/:sectionId" element={teacher(<TeacherSectionGrades />)} />
 
           <Route path="/my-profile" element={student(<StudentProfile />)} />

@@ -42,6 +42,33 @@ class CareerServiceTest {
     }
 
     @Test
+    void createCareer_invalidYearOrVacancies_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createCareer(new CareerCreateDTO("INF", "Informática", "desc", 0, 50)));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createCareer(new CareerCreateDTO("INF", "Informática", "desc", 2020, -1)));
+        verify(careerRepository, never()).save(any());
+    }
+
+    @Test
+    void updateCareer_invalidYearOrVacancies_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateCareer(1L, new CareerUpdateDTO("x", "x", -5, 1)));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updateCareer(1L, new CareerUpdateDTO("x", "x", 2021, -1)));
+        verify(careerRepository, never()).save(any());
+    }
+
+    @Test
+    void createCareer_zeroVacancies_ok() {
+        when(careerRepository.save(any(Career.class))).thenAnswer(i -> i.getArgument(0));
+
+        CareerResponseDTO result = service.createCareer(new CareerCreateDTO("INF", "Informática", "desc", 1, 0));
+
+        assertEquals(0, result.vacancies());
+    }
+
+    @Test
     void createCareer_duplicateCode_throws() {
         when(careerRepository.existsByCode("INF")).thenReturn(true);
 

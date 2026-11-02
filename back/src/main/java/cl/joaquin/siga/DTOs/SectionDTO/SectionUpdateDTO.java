@@ -10,7 +10,7 @@ import java.util.List;
 // sin subjectId ni academicPeriodId: cambiarlos sería otra sección distinta
 public record SectionUpdateDTO(
         @NotNull Long teacherId,
-        @NotNull @Min(1) @Max(60) Integer capacity,
+        @NotNull Integer capacity,
         @NotNull List<@Valid @NotNull ScheduleBlockDTO> scheduleBlocks
 ) {
 }

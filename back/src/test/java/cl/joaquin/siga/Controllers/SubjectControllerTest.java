@@ -55,37 +55,6 @@ class SubjectControllerTest {
     }
 
     @Test
-    void create_semesterOutOfRange_returns400() throws Exception {
-        mockMvc.perform(post("/api/subjects").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"studyPlanId": 1, "code": "TAP302", "name": "Ingeniería de Software", "semester": 5,
-                         "theoryHours": 2, "exerciseHours": 2, "labHours": 0, "credits": 5}
-                        """))
-                .andExpect(status().isBadRequest());
-        verify(subjectService, never()).createSubject(any());
-    }
-
-    @Test
-    void create_moreThanThreePrerequisites_returns400() throws Exception {
-        mockMvc.perform(post("/api/subjects").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"studyPlanId": 1, "code": "TAP401", "name": "Taller", "semester": 4,
-                         "theoryHours": 2, "exerciseHours": 2, "labHours": 0, "credits": 5,
-                         "prerequisiteIds": [1, 2, 3, 4]}
-                        """))
-                .andExpect(status().isBadRequest());
-        verify(subjectService, never()).createSubject(any());
-    }
-
-    @Test
-    void create_creditsOutOfRange_returns400() throws Exception {
-        mockMvc.perform(post("/api/subjects").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"studyPlanId": 1, "code": "TAP302", "name": "Ingeniería de Software", "semester": 3,
-                         "theoryHours": 2, "exerciseHours": 2, "labHours": 0, "credits": 8}
-                        """))
-                .andExpect(status().isBadRequest());
-        verify(subjectService, never()).createSubject(any());
-    }
-
-    @Test
     void create_invalidHoursSum_returns400FromService() throws Exception {
         when(subjectService.createSubject(any())).thenThrow(new IllegalArgumentException("suma de horas"));
 
@@ -108,16 +77,6 @@ class SubjectControllerTest {
                          "theoryHours": 2, "exerciseHours": 2, "labHours": 0, "credits": 5, "prerequisiteIds": []}
                         """))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void update_negativeHours_returns400() throws Exception {
-        mockMvc.perform(put("/api/subjects/20").contentType(MediaType.APPLICATION_JSON).content("""
-                        {"code": "TAP302", "name": "Ingeniería de Software", "semester": 3,
-                         "theoryHours": -1, "exerciseHours": 2, "labHours": 0, "credits": 5}
-                        """))
-                .andExpect(status().isBadRequest());
-        verify(subjectService, never()).updateSubject(any(), any());
     }
 
     @Test

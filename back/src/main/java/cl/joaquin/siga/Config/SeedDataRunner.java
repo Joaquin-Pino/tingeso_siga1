@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 // Al arrancar carga el Apéndice A si la base está vacía. Se apaga con siga.seed.enabled=false
 // (los tests lo hacen en src/test/resources/config)
 @Component
+@Order(1)
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "siga.seed.enabled", havingValue = "true", matchIfMissing = true)
 public class SeedDataRunner implements ApplicationRunner {

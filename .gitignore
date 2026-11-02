@@ -7,3 +7,5 @@ ejemplo_profe
 *.sh
 *.pdf
 *.md
+.dev-back.log
+.dev-back.pid

@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class GradeService {
+    private static final BigDecimal MIN_GRADE = new BigDecimal("1.0");
+    private static final BigDecimal MAX_GRADE = new BigDecimal("7.0");
+
 
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final SectionRepository sectionRepository;
@@ -66,6 +70,7 @@ public class GradeService {
     @Transactional
     public CourseRegistrationResponseDTO registerGrade(Long teacherId, Long sectionId, Long registrationId,
                                                        GradeUpdateDTO dto) {
+        validateGrade(dto.grade());
         Section section = findOwnSection(teacherId, sectionId);
 
         AcademicPeriod period = academicPeriodRepository.findById(section.getAcademicPeriodId())
@@ -82,6 +87,16 @@ public class GradeService {
 
         registration.setGrade(dto.grade());
         return CourseRegistrationService.toResponseDTO(courseRegistrationRepository.save(registration));
+    }
+
+    // nota final de 1,0 a 7,0 con un decimal
+    private static void validateGrade(BigDecimal grade) {
+        if (grade.compareTo(MIN_GRADE) < 0 || grade.compareTo(MAX_GRADE) > 0) {
+            throw new IllegalArgumentException("La nota debe estar entre 1.0 y 7.0");
+        }
+        if (grade.stripTrailingZeros().scale() > 1) {
+            throw new IllegalArgumentException("La nota admite como máximo un decimal");
+        }
     }
 
     private Section findOwnSection(Long teacherId, Long sectionId) {

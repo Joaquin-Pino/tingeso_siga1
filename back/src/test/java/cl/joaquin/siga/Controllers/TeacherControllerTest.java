@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import cl.joaquin.siga.DTOs.TeachingRecordDTO.TeachingRecordResponseDTO;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -74,6 +75,16 @@ class TeacherControllerTest {
         mockMvc.perform(get("/api/teachers/1/sections"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].teacherId").value(1));
+    }
+
+    @Test
+    void getTeachingHistory_returns200() throws Exception {
+        when(teacherService.getTeachingHistory(1L)).thenReturn(List.of(new TeachingRecordResponseDTO(
+                1L, 3L, 5L, 10L, "TAP101", "Algebra", 1, "2026-2", 20)));
+
+        mockMvc.perform(get("/api/teachers/1/teaching-history"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].periodCode").value("2026-2"));
     }
 
     @Test

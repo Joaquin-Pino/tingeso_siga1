@@ -16,6 +16,10 @@ const getSections = (id) => {
   return httpClient.get(`/api/teachers/${id}/sections`);
 };
 
+const getTeachingHistory = (id) => {
+  return httpClient.get(`/api/teachers/${id}/teaching-history`);
+};
+
 const create = (data) => {
   return httpClient.post("/api/teachers", data);
 };
@@ -32,4 +36,4 @@ const remove = (id) => {
   return httpClient.delete(`/api/teachers/${id}`);
 };
 
-export default { getAll, getMe, get, getSections, create, update, updateStatus, remove };
+export default { getAll, getMe, get, getSections, getTeachingHistory, create, update, updateStatus, remove };

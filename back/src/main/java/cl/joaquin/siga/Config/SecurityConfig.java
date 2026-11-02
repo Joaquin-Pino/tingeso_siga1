@@ -55,7 +55,8 @@ public class SecurityConfig {
                         .hasRole("STUDENT")
 
                         // docente: sus secciones y las notas de sus inscritos
-                        .requestMatchers(HttpMethod.GET, "/api/teachers/{id}/sections").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers(HttpMethod.GET, "/api/teachers/{id}/sections", "/api/teachers/{id}/teaching-history")
+                        .hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/teachers/{id}/sections/{sectionId}/registrations/**").hasRole("TEACHER")
 
                         // consulta de catálogo y oferta para cualquier usuario autenticado

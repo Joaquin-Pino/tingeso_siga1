@@ -8,6 +8,7 @@ import cl.joaquin.siga.Entities.University.SubjectPrerequisite;
 import cl.joaquin.siga.Entities.University.WeeklyHours;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
@@ -37,6 +38,7 @@ class SubjectServiceTest {
     @Mock AcademicRecordRepository academicRecordRepository;
     @Mock CourseRegistrationRepository courseRegistrationRepository;
     @Mock SectionRepository sectionRepository;
+    @Mock StudentRepository studentRepository;
     @InjectMocks SubjectService service;
 
     private static Subject subject(Long id, Long studyPlanId, String code, int semester) {
@@ -100,6 +102,15 @@ class SubjectServiceTest {
     }
 
     @Test
+    void createSubject_planHasStudents_throws() {
+        planExistsAndCodeFree();
+        when(studentRepository.existsByStudyPlanId(1L)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> service.createSubject(createDTO(1, 2, 2, 0, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
     void createSubject_weeklyHoursSumEight_throws() {
         planExistsAndCodeFree();
 
@@ -113,6 +124,30 @@ class SubjectServiceTest {
         when(subjectRepository.save(any(Subject.class))).thenAnswer(i -> i.getArgument(0));
 
         assertDoesNotThrow(() -> service.createSubject(createDTO(1, 3, 2, 2, null)));
+    }
+
+    @Test
+    void createSubject_semesterOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(createDTO(0, 2, 2, 0, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(createDTO(5, 2, 2, 0, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void createSubject_creditsOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 3, 2, 2, 0, 0, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 3, 2, 2, 0, 8, null)));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void updateSubject_semesterOrCreditsOutOfRange_throws() {
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L, updateDTO(5, null)));
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L,
+                new SubjectUpdateDTO("TAP302", "x", 3, 2, 2, 0, 8, null)));
+        verify(subjectRepository, never()).save(any());
     }
 
     @Test
@@ -139,6 +174,33 @@ class SubjectServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> service.createSubject(createDTO(4, 2, 2, 0, Set.of(1L, 2L, 3L, 4L))));
         verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void updateSubject_moreThanThreePrerequisites_throws() {
+        when(subjectRepository.findById(20L)).thenReturn(Optional.of(subject(20L, 1L, "TAP302", 4)));
+
+        assertThrows(IllegalArgumentException.class, () -> service.updateSubject(20L, updateDTO(4, Set.of(1L, 2L, 3L, 4L))));
+        verify(subjectRepository, never()).save(any());
+    }
+
+    @Test
+    void createSubject_semesterAndCreditsLimits_ok() {
+        planExistsAndCodeFree();
+        when(subjectRepository.save(any(Subject.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 1, 2, 2, 0, 1, null)));
+        assertDoesNotThrow(() -> service.createSubject(
+                new SubjectCreateDTO(1L, "TAP302", "x", 4, 2, 2, 0, 7, null)));
+    }
+
+    @Test
+    void createSubject_zeroHours_ok() {
+        planExistsAndCodeFree();
+        when(subjectRepository.save(any(Subject.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> service.createSubject(createDTO(1, 0, 0, 0, null)));
     }
 
     @Test

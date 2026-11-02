@@ -68,6 +68,9 @@ const TeacherList = () => {
                 <StatusBadge status={t.status} />
               </td>
               <td className="text-end">
+                <Link className="btn btn-sm btn-outline-primary me-1" to={`/teachers/${t.id}/history`}>
+                  Historial
+                </Link>
                 <Link className="btn btn-sm btn-outline-primary me-1" to={`/teachers/${t.id}/edit`}>
                   Editar
                 </Link>

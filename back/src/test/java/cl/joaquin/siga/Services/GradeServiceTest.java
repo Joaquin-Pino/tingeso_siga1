@@ -78,6 +78,29 @@ class GradeServiceTest {
     }
 
     @Test
+    void registerGrade_outOfRange_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("0.9"))));
+        assertThrows(IllegalArgumentException.class,
+                () -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("7.1"))));
+        verify(courseRegistrationRepository, never()).save(any());
+    }
+
+    @Test
+    void registerGrade_twoDecimals_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("5.55"))));
+        verify(courseRegistrationRepository, never()).save(any());
+    }
+
+    @Test
+    void registerGrade_limitsAndTrailingZero_ok() {
+        assertDoesNotThrow(() -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("1.0"))));
+        assertDoesNotThrow(() -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("7.0"))));
+        assertDoesNotThrow(() -> service.registerGrade(TEACHER_ID, SECTION_ID, 7L, new GradeUpdateDTO(new BigDecimal("5.50"))));
+    }
+
+    @Test
     void registerGrade_canCorrectAnExistingGrade() {
         registration.setGrade(new BigDecimal("3.0"));
 

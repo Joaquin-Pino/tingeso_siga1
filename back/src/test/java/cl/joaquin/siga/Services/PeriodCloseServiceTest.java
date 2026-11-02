@@ -14,6 +14,8 @@ import cl.joaquin.siga.Entities.University.Subject;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
 import cl.joaquin.siga.Repositories.People.StudentRepository;
+import cl.joaquin.siga.Repositories.People.TeachingRecordRepository;
+import cl.joaquin.siga.Entities.People.TeachingRecord;
 import cl.joaquin.siga.Repositories.University.AcademicPeriodRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
@@ -48,6 +50,7 @@ class PeriodCloseServiceTest {
     @Mock SectionRepository sectionRepository;
     @Mock SubjectRepository subjectRepository;
     @Mock StudentRepository studentRepository;
+    @Mock TeachingRecordRepository teachingRecordRepository;
     @InjectMocks PeriodCloseService service;
 
     private AcademicPeriod period;
@@ -145,6 +148,44 @@ class PeriodCloseServiceTest {
         assertEquals(new BigDecimal("4.0"), snapshot.getFinalGrade());
         assertEquals(CourseResult.PASSED, snapshot.getResult());
         verify(academicPeriodRepository).save(period);
+    }
+
+    @Test
+    void close_snapshotsEverySectionIntoTeachingHistory() {
+        registrations(registration(1L, 1L, "5.0"));
+        Section section = new Section();
+        section.setId(101L);
+        section.setSubjectId(1L);
+        section.setTeacherId(8L);
+        section.setEnrolledCount(12);
+        when(sectionRepository.findByAcademicPeriodId(PERIOD_ID)).thenReturn(List.of(section));
+
+        service.closePeriod(PERIOD_ID);
+
+        ArgumentCaptor<TeachingRecord> captor = ArgumentCaptor.forClass(TeachingRecord.class);
+        verify(teachingRecordRepository).save(captor.capture());
+        TeachingRecord record = captor.getValue();
+        assertEquals(8L, record.getTeacherId());
+        assertEquals(101L, record.getSectionId());
+        assertEquals("S1", record.getSubjectCode());
+        assertEquals("2027-1", record.getPeriodCode());
+        assertEquals(12, record.getEnrolledCount());
+    }
+
+    @Test
+    void close_teachingHistoryIsIdempotent() {
+        registrations(registration(1L, 1L, "5.0"));
+        Section section = new Section();
+        section.setId(101L);
+        section.setSubjectId(1L);
+        when(sectionRepository.findByAcademicPeriodId(PERIOD_ID)).thenReturn(List.of(section));
+        TeachingRecord existing = new TeachingRecord();
+        existing.setSectionId(101L);
+        when(teachingRecordRepository.findByAcademicPeriodId(PERIOD_ID)).thenReturn(List.of(existing));
+
+        service.closePeriod(PERIOD_ID);
+
+        verify(teachingRecordRepository, never()).save(any());
     }
 
     @Test

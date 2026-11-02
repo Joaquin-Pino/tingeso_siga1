@@ -8,6 +8,7 @@ import cl.joaquin.siga.Entities.University.SubjectPrerequisite;
 import cl.joaquin.siga.Entities.University.WeeklyHours;
 import cl.joaquin.siga.Exceptions.NotFoundException;
 import cl.joaquin.siga.Repositories.People.AcademicRecordRepository;
+import cl.joaquin.siga.Repositories.People.StudentRepository;
 import cl.joaquin.siga.Repositories.University.CourseRegistrationRepository;
 import cl.joaquin.siga.Repositories.University.SectionRepository;
 import cl.joaquin.siga.Repositories.University.StudyPlanRepository;
@@ -26,6 +27,10 @@ import java.util.Set;
 public class SubjectService {
     private static final int MAX_PREREQUISITES = 3;
     private static final int MAX_WEEKLY_HOURS_EXCLUSIVE = 8;
+    private static final int MIN_SEMESTER = 1;
+    private static final int MAX_SEMESTER = 4;
+    private static final int MIN_CREDITS = 1;
+    private static final int MAX_CREDITS = 7;
 
     private final SubjectRepository subjectRepository;
     private final SubjectPrerequisiteRepository subjectPrerequisiteRepository;
@@ -33,6 +38,7 @@ public class SubjectService {
     private final AcademicRecordRepository academicRecordRepository;
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final SectionRepository sectionRepository;
+    private final StudentRepository studentRepository;
 
     public SubjectResponseDTO getById(Long subjectId) {
         Subject subject = findSubject(subjectId);
@@ -53,6 +59,7 @@ public class SubjectService {
 
     @Transactional
     public SubjectResponseDTO createSubject(SubjectCreateDTO dto) {
+        validateSemesterAndCredits(dto.semester(), dto.credits());
         if (!studyPlanRepository.existsById(dto.studyPlanId())) {
             throw new NotFoundException("Plan de estudios no encontrado: " + dto.studyPlanId());
         }
@@ -60,6 +67,13 @@ public class SubjectService {
             throw new IllegalArgumentException(
                     "Ya existe una asignatura con el código " + dto.code() + " en el plan: " + dto.studyPlanId());
         }
+
+        // si hay estudiantes con este plan, no se le pueden agregar más asignaturas
+        if (studentRepository.existsByStudyPlanId(dto.studyPlanId())) {
+            throw new IllegalStateException(
+                    "No se pueden agregar asignaturas: hay estudiantes inscritos en el plan: " + dto.studyPlanId());
+        }
+
         validateWeeklyHours(dto.theoryHours(), dto.exerciseHours(), dto.labHours());
         Set<Long> prerequisiteIds = nullToEmpty(dto.prerequisiteIds());
         validatePrerequisites(null, dto.studyPlanId(), dto.semester(), prerequisiteIds);
@@ -80,6 +94,7 @@ public class SubjectService {
     // El historial académico guarda un snapshot de la asignatura, así que editarla no lo altera
     @Transactional
     public SubjectResponseDTO updateSubject(Long subjectId, SubjectUpdateDTO dto) {
+        validateSemesterAndCredits(dto.semester(), dto.credits());
         Subject subject = findSubject(subjectId);
 
         // el código debe seguir siendo único dentro del plan
@@ -134,6 +149,16 @@ public class SubjectService {
     private Subject findSubject(Long subjectId) {
         return subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new NotFoundException("Asignatura no encontrada: " + subjectId));
+    }
+
+    private static void validateSemesterAndCredits(int semester, int credits) {
+        if (semester < MIN_SEMESTER || semester > MAX_SEMESTER) {
+            throw new IllegalArgumentException(
+                    "El semestre debe estar entre " + MIN_SEMESTER + " y " + MAX_SEMESTER);
+        }
+        if (credits < MIN_CREDITS || credits > MAX_CREDITS) {
+            throw new IllegalArgumentException("Los SCT deben estar entre " + MIN_CREDITS + " y " + MAX_CREDITS);
+        }
     }
 
     private static void validateWeeklyHours(int theory, int exercise, int lab) {

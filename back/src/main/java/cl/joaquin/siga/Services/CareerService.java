@@ -37,6 +37,7 @@ public class CareerService {
     }
 
     public CareerResponseDTO createCareer(CareerCreateDTO dto) {
+        validateStartYearAndVacancies(dto.startYear(), dto.vacancies());
         if (careerRepository.existsByCode(dto.code())) {
             throw new IllegalArgumentException("Ya existe una carrera con el código: " + dto.code());
         }
@@ -54,12 +55,22 @@ public class CareerService {
 
     // el código no se modifica una vez creada la carrera
     public CareerResponseDTO updateCareer(Long careerId, CareerUpdateDTO dto) {
+        validateStartYearAndVacancies(dto.startYear(), dto.vacancies());
         Career career = findOrThrow(careerId);
         career.setName(dto.name());
         career.setDescription(dto.description());
         career.setStartYear(dto.startYear());
         career.setVacancies(dto.vacancies());
         return toResponseDTO(careerRepository.save(career));
+    }
+
+    private static void validateStartYearAndVacancies(int startYear, int vacancies) {
+        if (startYear <= 0) {
+            throw new IllegalArgumentException("El año de inicio debe ser positivo");
+        }
+        if (vacancies < 0) {
+            throw new IllegalArgumentException("Las vacantes no pueden ser negativas");
+        }
     }
 
     public CareerResponseDTO updateStatus(Long careerId, CareerStatusUpdateDTO dto) {

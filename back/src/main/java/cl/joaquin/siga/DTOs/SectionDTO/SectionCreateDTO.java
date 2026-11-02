@@ -13,7 +13,7 @@ public record SectionCreateDTO(
         @NotNull Long subjectId,
         @NotNull Long academicPeriodId,
         @NotNull Long teacherId,
-        @NotNull @Min(1) @Max(60) Integer capacity,
+        @NotNull Integer capacity,
         @NotNull List<@Valid @NotNull ScheduleBlockDTO> scheduleBlocks
 ) {
 }

@@ -34,6 +34,10 @@ public class SectionService {
     // cada bloque horario equivale a 2 horas pedagógicas
     private static final int HOURS_PER_BLOCK = 2;
 
+    private static final int MAX_CAPACITY = 60;
+    private static final int MIN_MODULE = 1;
+    private static final int MAX_MODULE = 6;
+
     private final SectionRepository sectionRepository;
     private final SectionScheduleBlockRepository sectionScheduleBlockRepository;
     private final SubjectRepository subjectRepository;
@@ -70,6 +74,8 @@ public class SectionService {
                     "Ya existe una sección de la asignatura " + subject.getCode() + " en el período: "
                             + dto.academicPeriodId());
         }
+
+        validateCapacity(dto.capacity());
         validateTeacherActive(dto.teacherId());
         validateScheduleBlocks(subject, dto.scheduleBlocks());
         validateNoTeacherConflict(null, dto.teacherId(), dto.academicPeriodId(), dto.scheduleBlocks());
@@ -91,6 +97,7 @@ public class SectionService {
         Section section = findSection(sectionId);
         validatePeriodOpen(section.getAcademicPeriodId());
 
+        validateCapacity(dto.capacity());
         if (dto.capacity() < section.getEnrolledCount()) {
             throw new IllegalStateException(
                     "La capacidad no puede ser menor a los " + section.getEnrolledCount() + " inscritos de la sección");
@@ -157,6 +164,13 @@ public class SectionService {
         }
     }
 
+    // el DTO ya exige 1 a 60; se repite aquí porque otros Services (datos demo) crean secciones sin pasar por el controller
+    private static void validateCapacity(int capacity) {
+        if (capacity < 1 || capacity > MAX_CAPACITY) {
+            throw new IllegalArgumentException("La capacidad de la sección debe estar entre 1 y " + MAX_CAPACITY);
+        }
+    }
+
     private void validateTeacherActive(Long teacherId) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new NotFoundException("Docente no encontrado: " + teacherId));
@@ -165,8 +179,14 @@ public class SectionService {
         }
     }
 
-    // sin bloques repetidos, y tantos bloques como horas TEL / 2
+    // módulos 1 a 6, sin bloques repetidos, y tantos bloques como horas TEL / 2
     private static void validateScheduleBlocks(Subject subject, List<ScheduleBlockDTO> blocks) {
+        for (ScheduleBlockDTO block : blocks) {
+            if (block.module() < MIN_MODULE || block.module() > MAX_MODULE) {
+                throw new IllegalArgumentException(
+                        "El módulo del bloque horario debe estar entre " + MIN_MODULE + " y " + MAX_MODULE);
+            }
+        }
         if (Set.copyOf(blocks).size() != blocks.size()) {
             throw new IllegalArgumentException("La sección tiene bloques horarios duplicados");
         }

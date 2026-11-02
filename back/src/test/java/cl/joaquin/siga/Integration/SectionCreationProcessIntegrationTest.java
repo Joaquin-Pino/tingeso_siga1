@@ -65,7 +65,12 @@ class SectionCreationProcessIntegrationTest extends IntegrationTestBase {
 
     @Test
     void sameTeacherSameSlotInAnotherPeriod_isAllowed() throws Exception {
-        Long nextPeriod = period(2027, Semester.FIRST);
+        // el Service ya no deja un segundo período abierto, así que el siguiente se guarda directo
+        var next = new cl.joaquin.siga.Entities.University.AcademicPeriod();
+        next.setYear(2027);
+        next.setSemester(Semester.FIRST);
+        next.setStatus(cl.joaquin.siga.Entities.University.PeriodStatus.OPEN);
+        Long nextPeriod = academicPeriodRepository.save(next).getId();
         section(oneBlockSubject, periodId, teacherId, 30, block(cl.joaquin.siga.Entities.University.WeekDay.L, 1));
 
         mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
@@ -97,6 +102,36 @@ class SectionCreationProcessIntegrationTest extends IntegrationTestBase {
 
         assertEquals(0, sectionRepository.count());
         assertEquals(0, sectionScheduleBlockRepository.count());
+    }
+
+    @Test
+    void capacityOutOfRange_isRejectedWith400() throws Exception {
+        for (int capacity : new int[]{61, 0}) {
+            mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                            .content(body(oneBlockSubject, periodId, teacherId, capacity, blockJson("L", 1))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        assertEquals(0, sectionRepository.count());
+    }
+
+    @Test
+    void capacity60_isAccepted() throws Exception {
+        mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                        .content(body(oneBlockSubject, periodId, teacherId, 60, blockJson("L", 1))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.capacity").value(60));
+    }
+
+    @Test
+    void moduleOutOfRange_isRejectedWith400() throws Exception {
+        for (int module : new int[]{0, 7}) {
+            mockMvc.perform(post("/api/sections").with(admin()).contentType(APPLICATION_JSON)
+                            .content(body(oneBlockSubject, periodId, teacherId, 30, blockJson("L", module))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        assertEquals(0, sectionRepository.count());
     }
 
     @Test
