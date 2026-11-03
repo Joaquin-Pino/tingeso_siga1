@@ -47,7 +47,9 @@ import java.util.TreeMap;
 //
 // Estudiantes (todas las contraseñas son TEMPORARY_PASSWORD):
 //  1 TAP  ingresó en 2025-1 y va al día; en 2026-2 cursa 4º semestre aprobando todo. Al cerrar el período egresa
-//  2 TAP  igual que el 1 pero con TAP404 en 3,2: reprueba al cerrar el período y sigue REGULAR
+//  2 TAP  aprobó 1º y 2º y del 3º todo menos TAP306 (3,3); matriculado en 2026-2 pero sin inscribir. Para la inscripción en
+//         vivo: TAP306 se ofrece en 2026-2 con un bloque en común con TAP404 (tope de horario), y mientras TAP306 siga
+//         pendiente no puede inscribir 4º semestre sin ella. No se puede inscribir TAP306 junto con TAP404
 //  3 TAD  reprobó TAD202 en 2025-2 y la repitió en 2026-1; en 2026-2 mezcla 3º y 4º semestre (historial con FAILED y PASSED)
 //  4 TCS  al día, matriculado en 2026-2 pero sin inscribir: sirve para mostrar la inscripción en vivo (6 asignaturas de 4º)
 //         y la anulación. Si se inscribe, sus notas quedan pendientes y los docentes deben ponerlas antes de cerrar
@@ -81,6 +83,13 @@ public class DemoDataService {
     private record StudentSeed(String run, String fullName, String email, String careerCode, List<List<Take>> periods) {
     }
 
+    // asignatura pendiente de semestre inferior que en el último período se ofrece con un bloque en común con otra
+    // (tope de horario) para mostrar esa regla en la inscripción
+    private record ClashSeed(String careerCode, String pendingCode, String clashWithCode) {
+    }
+
+    private static final ClashSeed CLASH = new ClashSeed("10450", "TAP306", "TAP404");
+
     private record PeriodSeed(int year, Semester semester, int coreSemester, boolean close) {
     }
 
@@ -109,8 +118,8 @@ public class DemoDataService {
                     passAll("TAP", 1), passAll("TAP", 2), passAll("TAP", 3),
                     passAll("TAP", 4))),
             new StudentSeed("20.222.222-2", "Estudiante 2", "estudiante2@ipt.cl", "10450", periods(
-                    passAll("TAP", 1), passAll("TAP", 2), passAll("TAP", 3),
-                    override(passAll("TAP", 4), grade("TAP404", "3.2")))),
+                    passAll("TAP", 1), passAll("TAP", 2), override(passAll("TAP", 3), grade("TAP306", "3.3")),
+                    List.of())),
             new StudentSeed("20.333.333-3", "Estudiante 3", "estudiante3@ipt.cl", "10451", periods(
                     passAll("TAD", 1),
                     override(passAll("TAD", 2), grade("TAD202", "3.4")),
@@ -254,6 +263,7 @@ public class DemoDataService {
                 }
             }
             groups.add(core);
+            boolean clashPeriod = index == PERIODS.size() - 1 && career.getKey().equals(CLASH.careerCode());
             for (StudentSeed student : STUDENTS) {
                 List<Take> takes = student.periods().get(index);
                 if (!student.careerCode().equals(career.getKey()) || takes == null) {
@@ -271,6 +281,14 @@ public class DemoDataService {
                 }
             }
 
+            if (clashPeriod) {
+                for (Subject subject : career.getValue()) {
+                    if (subject.getCode().equals(CLASH.pendingCode()) && !offered.contains(subject)) {
+                        offered.add(subject); // al final: su tope se calcula con el horario ya asignado
+                    }
+                }
+            }
+
             Map<String, List<Integer>> slotsByCode = new HashMap<>();
             for (Subject subject : offered) {
                 Set<Integer> forbidden = slotsOfNeighbors(subject, groups, slotsByCode);
@@ -279,7 +297,9 @@ public class DemoDataService {
                 List<Integer> slots = new ArrayList<>();
                 for (int i = 0; i < busySlots.size() && teacherIndex < 0; i++) {
                     int candidate = (next + i) % busySlots.size();
-                    slots = freeSlots(needed, forbidden, busySlots.get(candidate));
+                    slots = clashPeriod && subject.getCode().equals(CLASH.pendingCode())
+                            ? clashSlots(needed, slotsByCode, busySlots.get(candidate))
+                            : freeSlots(needed, forbidden, busySlots.get(candidate));
                     if (slots.size() == needed) {
                         teacherIndex = candidate;
                     }
@@ -326,6 +346,23 @@ public class DemoDataService {
                 slots.add(slot);
             }
         }
+        return slots;
+    }
+
+    // el primer bloque de la asignatura con la que debe chocar y el resto en slots que nadie más usa;
+    // si el docente no tiene libre el bloque del choque devuelve una lista vacía
+    private static List<Integer> clashSlots(int needed, Map<String, List<Integer>> slotsByCode, Set<Integer> teacherBusy) {
+        int clashSlot = slotsByCode.get(CLASH.clashWithCode()).get(0);
+        if (teacherBusy.contains(clashSlot)) {
+            return new ArrayList<>();
+        }
+        Set<Integer> taken = new HashSet<>(teacherBusy);
+        for (List<Integer> other : slotsByCode.values()) {
+            taken.addAll(other);
+        }
+        List<Integer> slots = new ArrayList<>();
+        slots.add(clashSlot);
+        slots.addAll(freeSlots(needed - 1, taken, new HashSet<>()));
         return slots;
     }
 

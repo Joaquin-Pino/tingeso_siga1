@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -113,17 +115,33 @@ class DemoDataIntegrationTest extends IntegrationTestBase {
         assertEquals(StudentStatus.GRADUATED, student(1).getStatus());
         assertEquals(StudentStatus.ELIMINATED, student(5).getStatus());
 
-        // estudiante 2: reprobó TAP404 en el cierre, pero sigue regular
+        // estudiante 2: sin inscripciones en 2026-2, no tiene registros y sigue regular
         assertEquals(StudentStatus.REGULAR, student(2).getStatus());
-        List<AcademicRecord> failedRecords = new ArrayList<>();
-        for (AcademicRecord record : academicRecordRepository.findByStudentIdAndAcademicPeriodId(
-                student(2).getId(), periodId)) {
-            if (record.getResult() == CourseResult.FAILED) {
-                failedRecords.add(record);
-            }
+        assertTrue(academicRecordRepository.findByStudentIdAndAcademicPeriodId(student(2).getId(), periodId).isEmpty());
+    }
+
+    @Test
+    void seedIfEmpty_student2HasPendingTap306ThatClashesWithTap404() {
+        loadDemo();
+        Student student = student(2);
+        Long periodId = openPeriod().getId();
+
+        // aprobó todo hasta 3º menos TAP306, que reprobó en 2026-1
+        assertEquals(17, academicRecordRepository.findByStudentIdAndResult(student.getId(), CourseResult.PASSED).size());
+        assertTrue(courseRegistrationRepository.findByStudentIdAndAcademicPeriodId(student.getId(), periodId).isEmpty());
+
+        Map<String, Long> sectionByCode = new HashMap<>();
+        for (Section section : sectionRepository.findByAcademicPeriodId(periodId)) {
+            sectionByCode.put(subjectRepository.findById(section.getSubjectId()).orElseThrow().getCode(), section.getId());
         }
-        assertEquals(1, failedRecords.size());
-        assertEquals("TAP404", failedRecords.get(0).getSubjectCode());
+
+        // TAP306 + TAP404 chocan; sin TAP404 el lote es válido (4º semestre exige TAP306 inscrita)
+        assertThrows(IllegalStateException.class, () -> courseRegistrationService.register(student.getId(),
+                List.of(sectionByCode.get("TAP306"), sectionByCode.get("TAP404"), sectionByCode.get("TAP401"))));
+        assertThrows(IllegalStateException.class, () -> courseRegistrationService.register(student.getId(),
+                List.of(sectionByCode.get("TAP401"), sectionByCode.get("TAP402"), sectionByCode.get("TAP403"))));
+        assertEquals(4, courseRegistrationService.register(student.getId(), List.of(sectionByCode.get("TAP306"),
+                sectionByCode.get("TAP401"), sectionByCode.get("TAP402"), sectionByCode.get("TAP403"))).size());
     }
 
     @Test

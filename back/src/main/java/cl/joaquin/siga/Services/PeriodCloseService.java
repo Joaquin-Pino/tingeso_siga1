@@ -100,6 +100,7 @@ public class PeriodCloseService {
         for (Subject subject : subjectRepository.findAllById(subjectIdsOfSections(missingBySection.keySet()))) {
             subjectCodes.put(subject.getId(), subject.getCode());
         }
+        
         List<String> details = new ArrayList<>();
         for (Section section : sectionRepository.findAllById(missingBySection.keySet())) {
             details.add("sección " + section.getId() + " (" + subjectCodes.get(section.getSubjectId()) + "): "
